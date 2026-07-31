@@ -1,4 +1,4 @@
-﻿const MAP_WIDTH = 720;
+const MAP_WIDTH = 720;
 const MAP_HEIGHT = 980;
 const STORAGE_KEY = "thailand-visited-provinces";
 const FONT_STACK = "'LINE Seed Sans TH', 'Segoe UI', Tahoma, sans-serif";
@@ -88,6 +88,8 @@ const state = {
   mapViewBox: { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT },
   pan: null,
   suppressNextClick: false,
+  listMode: "visited",
+  recommendedProvince: null,
   visited: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")),
   search: ""
 };
@@ -102,6 +104,11 @@ const activeProvince = document.querySelector("#activeProvince");
 const activeStatus = document.querySelector("#activeStatus");
 const resetButton = document.querySelector("#resetButton");
 const shareButton = document.querySelector("#shareButton");
+const showVisitedButton = document.querySelector("#showVisitedButton");
+const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
+const nextProvinceName = document.querySelector("#nextProvinceName");
+const unvisitedSummary = document.querySelector("#unvisitedSummary");
+const shuffleProvinceButton = document.querySelector("#shuffleProvinceButton");
 const zoomInButton = document.querySelector("#zoomInButton");
 const zoomOutButton = document.querySelector("#zoomOutButton");
 const zoomResetButton = document.querySelector("#zoomResetButton");
@@ -159,25 +166,42 @@ function renderMap() {
 function renderList() {
   const query = state.search.trim().toLowerCase();
   const filtered = state.features.filter((feature) => {
-    const en = feature.properties.NAME_1.toLowerCase();
+    const province = feature.properties.NAME_1;
+    const isVisited = state.visited.has(province);
+    const matchesMode = state.listMode === "visited" ? isVisited : !isVisited;
+    const en = province.toLowerCase();
     const th = getThaiName(feature).toLowerCase();
-    return en.includes(query) || th.includes(query);
+    return matchesMode && (en.includes(query) || th.includes(query));
   });
+
+  if (!filtered.length) {
+    const item = document.createElement("li");
+    item.className = "province-empty";
+    item.textContent = state.listMode === "visited" ? "ยังไม่ได้เลือกจังหวัดที่เคยไป" : "ไปครบทุกจังหวัดแล้ว";
+    list.replaceChildren(item);
+    return;
+  }
 
   list.replaceChildren(
     ...filtered.map((feature) => {
       const province = feature.properties.NAME_1;
       const item = document.createElement("li");
       const button = document.createElement("button");
+      const checkmark = document.createElement("span");
+      const nameWrap = document.createElement("span");
+      const thaiName = document.createElement("strong");
+      const englishName = document.createElement("span");
+
       button.type = "button";
-      button.className = `province-toggle${state.visited.has(province) ? " is-visited" : ""}`;
-      button.innerHTML = `
-        <span class="checkmark">✓</span>
-        <span class="province-name">
-          <strong>${getThaiName(feature)}</strong>
-          <span>${province}</span>
-        </span>
-      `;
+      button.className = "province-toggle" + (state.visited.has(province) ? " is-visited" : "");
+      checkmark.className = "checkmark";
+      checkmark.textContent = "✓";
+      nameWrap.className = "province-name";
+      thaiName.textContent = getThaiName(feature);
+      englishName.textContent = province;
+
+      nameWrap.append(thaiName, englishName);
+      button.append(checkmark, nameWrap);
       button.addEventListener("click", () => toggleProvince(province));
       item.appendChild(button);
       return item;
@@ -210,8 +234,55 @@ function updateSummary() {
   const count = state.visited.size;
   const percent = Math.round((count / 77) * 100);
   visitedCount.textContent = count;
-  progressPercent.textContent = `${percent}%`;
-  progressBar.style.width = `${percent}%`;
+  progressPercent.textContent = percent + "%";
+  progressBar.style.width = percent + "%";
+  updateTravelSuggestion();
+}
+
+function updateListModeControls() {
+  const isVisitedMode = state.listMode === "visited";
+  showVisitedButton.classList.toggle("is-active", isVisitedMode);
+  showUnvisitedButton.classList.toggle("is-active", !isVisitedMode);
+  showVisitedButton.setAttribute("aria-pressed", String(isVisitedMode));
+  showUnvisitedButton.setAttribute("aria-pressed", String(!isVisitedMode));
+}
+
+function setListMode(mode) {
+  state.listMode = mode;
+  updateListModeControls();
+  renderList();
+}
+
+function getUnvisitedFeatures() {
+  return state.features.filter((feature) => !state.visited.has(feature.properties.NAME_1));
+}
+
+function pickNextProvince() {
+  const unvisited = getUnvisitedFeatures();
+  state.recommendedProvince = unvisited.length ? unvisited[Math.floor(Math.random() * unvisited.length)].properties.NAME_1 : null;
+  updateTravelSuggestion();
+}
+
+function updateTravelSuggestion() {
+  if (!nextProvinceName) return;
+  const unvisited = getUnvisitedFeatures();
+  if (unvisitedSummary) {
+    unvisitedSummary.textContent = "ยังไม่ได้ไป " + unvisited.length + " จังหวัด";
+  }
+
+  if (!unvisited.length) {
+    state.recommendedProvince = null;
+    nextProvinceName.textContent = "ไปครบทุกจังหวัดแล้ว";
+    shuffleProvinceButton.disabled = true;
+    return;
+  }
+
+  if (!state.recommendedProvince || state.visited.has(state.recommendedProvince)) {
+    state.recommendedProvince = unvisited[0].properties.NAME_1;
+  }
+
+  nextProvinceName.textContent = getThaiNameByEnglish(state.recommendedProvince);
+  shuffleProvinceButton.disabled = false;
 }
 
 function showActiveProvince(province) {
@@ -624,6 +695,10 @@ function downloadBlob(blob, filename) {
     URL.revokeObjectURL(url);
   }, 1000);
 }
+
+showVisitedButton.addEventListener("click", () => setListMode("visited"));
+showUnvisitedButton.addEventListener("click", () => setListMode("unvisited"));
+shuffleProvinceButton.addEventListener("click", pickNextProvince);
 
 search.addEventListener("input", (event) => {
   state.search = event.target.value;

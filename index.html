@@ -60,6 +60,15 @@
               <div id="progressBar" class="progress-bar"></div>
             </div>
           </div>
+          <div class="list-mode" aria-label="เลือกมุมมองรายการจังหวัด">
+            <button id="showVisitedButton" class="is-active" type="button" aria-pressed="true">ไปมาแล้ว</button>
+            <button id="showUnvisitedButton" type="button" aria-pressed="false">ยังไม่ได้ไป</button>
+          </div>
+          <div class="next-province" aria-live="polite">
+            <span id="unvisitedSummary">ยังไม่ได้ไป 0 จังหวัด</span>
+            <strong id="nextProvinceName">-</strong>
+            <button id="shuffleProvinceButton" type="button">สุ่มใหม่</button>
+          </div>
           <ul id="provinceList" class="province-list"></ul>
           <div class="summary" aria-live="polite">
             <span id="visitedCount">0</span>
@@ -69,7 +78,7 @@
       </section>
       <footer class="site-footer">
         <a class="footer-brand" href="/maps/privacy">นโยบายความเป็นส่วนตัว</a>
-        <a class="footer-brand" href="https://termtem.in.th/">termtem.in.th</a>
+        <a class="footer-brand" href="https://termtem.in.th/" target="_blank" rel="noopener noreferrer">termtem.in.th</a>
       </footer>
     </main>
 
