@@ -1,1 +1,4 @@
 vendor/
+
+.vercel
+.env*
