@@ -448,6 +448,7 @@ function createShareImage() {
   drawExportMap(ctx);
   drawExportLegend(ctx);
   drawExportList(ctx, visited);
+  drawExportUrl(ctx);
 
 
   return new Promise((resolve, reject) => {
@@ -461,6 +462,13 @@ function createShareImage() {
   });
 }
 
+function drawExportUrl(ctx) {
+  ctx.fillStyle = "#8a8177";
+  ctx.font = `600 18px ${FONT_STACK}`;
+  ctx.textAlign = "center";
+  ctx.fillText("lab.termtem.in.th/maps", 540, 1042);
+  ctx.textAlign = "start";
+}
 function drawExportHeader(ctx, count, percent) {
   ctx.fillStyle = "#b83f27";
   ctx.font = `700 28px ${FONT_STACK}`;
@@ -656,6 +664,8 @@ map.addEventListener("click", (event) => {
     state.suppressNextClick = false;
   }
 }, true);
+
+
 
 
 
