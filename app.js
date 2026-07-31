@@ -110,7 +110,7 @@ init();
 
 async function init() {
   try {
-    const response = await fetch("data/thailand.json");
+    const response = await fetch("/data/thailand.json");
     const geojson = await response.json();
     state.features = geojson.features.sort((a, b) => {
       return getThaiName(a).localeCompare(getThaiName(b), "th");
@@ -478,7 +478,7 @@ function drawExportHeader(ctx, count, percent) {
 function drawExportMap(ctx) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 54, y: 220, width: 430, height: 720 };
+  const mapBox = { x: 54, y: 204, width: 430, height: 776 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -503,7 +503,7 @@ function drawExportMap(ctx) {
 
 function drawExportLegend(ctx) {
   const x = 104;
-  const y = 910;
+  const y = 966;
   ctx.font = `800 22px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, "#e95f3d", "ไปมาแล้ว");
   drawLegendItem(ctx, x + 170, y, "#f1dcc9", "ยังไม่ไป");
@@ -522,9 +522,9 @@ function drawLegendItem(ctx, x, y, color, label) {
 }
 function drawExportList(ctx, visited) {
   const cardX = 496;
-  const cardY = 232;
+  const cardY = 214;
   const cardWidth = 496;
-  const cardHeight = 704;
+  const cardHeight = 774;
   const x = cardX + 28;
   const y = cardY + 58;
   const width = cardWidth - 56;
@@ -552,8 +552,9 @@ function drawExportList(ctx, visited) {
   const rows = Math.ceil(names.length / columns);
   const columnWidth = width / columns;
   const dense = names.length > 34;
-  const fontSize = dense ? 18 : 20;
-  const lineHeight = dense ? 24 : 28;
+  const fontSize = dense ? 18 : 21;
+  const availableListHeight = cardHeight - 126;
+  const lineHeight = clamp(Math.floor(availableListHeight / Math.max(rows, 1)), dense ? 23 : 30, dense ? 27 : 42);
   ctx.font = `${dense ? 600 : 700} ${fontSize}px ${FONT_STACK}`;
 
   names.forEach((name, index) => {
@@ -655,6 +656,9 @@ map.addEventListener("click", (event) => {
     state.suppressNextClick = false;
   }
 }, true);
+
+
+
 
 
 
