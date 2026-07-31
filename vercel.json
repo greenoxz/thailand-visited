@@ -6,6 +6,7 @@
     { "src": "app.js", "use": "@vercel/static" },
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "favicon.svg", "use": "@vercel/static" },
+    { "src": "favicon.png", "use": "@vercel/static" },
     { "src": "data/**", "use": "@vercel/static" },
     { "src": "assets/**", "use": "@vercel/static" }
   ],
