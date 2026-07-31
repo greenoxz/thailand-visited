@@ -10,6 +10,10 @@
     { "src": "assets/**", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/maps", "dest": "/index.html" },
+    { "src": "/maps/", "dest": "/index.html" },
+    { "src": "/maps/privacy", "dest": "/privacy.html" },
+    { "src": "/maps/privacy/", "dest": "/privacy.html" },
     { "src": "/privacy", "dest": "/privacy.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
