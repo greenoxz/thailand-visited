@@ -1,0 +1,87 @@
+﻿<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thailand Visited Map</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Thailand Visited</p>
+          <h1>จังหวัดที่เคยไปเที่ยวมาแล้ว</h1>
+        </div>
+      </header>
+
+      <section class="workspace" aria-label="แผนที่จังหวัดประเทศไทย">
+        <div class="map-area">
+          <div class="map-toolbar">
+            <div>
+              <strong id="activeProvince">เลือกจังหวัดบนแผนที่</strong>
+              <span id="activeStatus">กดที่จังหวัดเพื่อเปลี่ยนสถานะ</span>
+            </div>
+            <div class="toolbar-actions">
+              <button id="shareButton" type="button">แชร์ภาพ</button>
+              <button id="resetButton" type="button">ล้างทั้งหมด</button>
+            </div>
+          </div>
+          <div class="map-zoom-controls" aria-label="ควบคุมการซูมแผนที่">
+            <button id="zoomInButton" type="button" aria-label="ซูมเข้า">+</button>
+            <button id="zoomOutButton" type="button" aria-label="ซูมออก">−</button>
+            <button id="zoomResetButton" type="button" aria-label="รีเซ็ตซูม">รีเซ็ต</button>
+          </div>
+          <svg id="thailandMap" role="img" aria-label="แผนที่ประเทศไทยสำหรับเลือกจังหวัด" viewBox="0 0 720 980"></svg>
+          <div class="map-legend" aria-label="คำอธิบายสีบนแผนที่">
+            <div class="legend-item">
+              <span class="legend-swatch legend-visited"></span>
+              <span>ไปมาแล้ว</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-unvisited"></span>
+              <span>ยังไม่ไป</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="province-panel" aria-label="รายการจังหวัด">
+          <label class="search-box">
+            <span>ค้นหาจังหวัด</span>
+            <input id="provinceSearch" type="search" placeholder="เช่น เชียงใหม่, Bangkok" />
+          </label>
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>ความคืบหน้า</span>
+              <strong id="progressPercent">0%</strong>
+            </div>
+            <div class="progress-track">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+          </div>
+          <ul id="provinceList" class="province-list"></ul>
+          <div class="summary" aria-live="polite">
+            <span id="visitedCount">0</span>
+            <span>จาก 77 จังหวัด</span>
+          </div>
+        </aside>
+      </section>
+      <footer class="site-footer">
+        <a class="footer-brand" href="/privacy.html">นโยบายความเป็นส่วนตัว</a>
+        <a class="footer-brand" href="https://termtem.in.th/">termtem.in.th</a>
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
