@@ -1202,6 +1202,9 @@ search.addEventListener("input", (event) => {
 
 resetButton.addEventListener("click", () => {
   if (!state.visited.size) return;
+  if (!window.confirm("คุณต้องการล้างข้อมูลจังหวัดที่เคยไปทั้งหมดใช่หรือไม่?")) {
+    return;
+  }
   state.visited.clear();
   localStorage.removeItem(STORAGE_KEY);
   updateProvinceStyles();
