@@ -1,4 +1,4 @@
-﻿import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 
@@ -12,7 +12,10 @@ const types = {
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
   ".svg": "image/svg+xml; charset=utf-8",
-  ".woff2": "font/woff2"
+  ".woff2": "font/woff2",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8"
 };
 
 createServer((request, response) => {

@@ -7,6 +7,11 @@
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "favicon.svg", "use": "@vercel/static" },
     { "src": "favicon.png", "use": "@vercel/static" },
+    { "src": "robots.txt", "use": "@vercel/static" },
+    { "src": "sitemap.xml", "use": "@vercel/static" },
+    { "src": "og-image.png", "use": "@vercel/static" },
+    { "src": "qrcode.png", "use": "@vercel/static" },
+    { "src": "site.webmanifest", "use": "@vercel/static" },
     { "src": "data/**", "use": "@vercel/static" },
     { "src": "assets/**", "use": "@vercel/static" }
   ],

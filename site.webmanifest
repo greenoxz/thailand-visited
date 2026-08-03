@@ -1,0 +1,16 @@
+{
+  "name": "Thailand Visited Map",
+  "short_name": "Thailand Visited",
+  "description": "แผนที่เช็กอิน 77 จังหวัดที่เคยไปเที่ยวในไทย",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f2eb",
+  "theme_color": "#f6f2eb",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
