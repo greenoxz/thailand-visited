@@ -25,7 +25,6 @@
               <span id="activeStatus">กดที่จังหวัดเพื่อเปลี่ยนสถานะ</span>
             </div>
             <div class="toolbar-actions">
-              <button id="shareButton" class="btn-share-main" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span>แชร์ภาพ</span></button>
               <button id="resetButton" type="button" aria-label="ล้างทั้งหมด" title="ล้างทั้งหมด"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span class="sr-only">ล้างทั้งหมด</span></button>
             </div>
           </div>
@@ -57,7 +56,7 @@
             <span class="summary-label">จังหวัดที่ไปมาแล้ว</span>
           </div>
 
-          <button id="sidebarShareButton" class="btn-share-hero" type="button">
+          <button id="shareButton" class="btn-share-hero" type="button">
             <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
             <span>แชร์ภาพสรุปการเดินทาง</span>
           </button>
@@ -130,28 +129,32 @@
             </div>
           </div>
           <div class="options-column">
-            <p class="modal-subtitle">เลือกโทนสีการ์ดภาพที่คุณชอบ:</p>
+            <div class="aspect-ratio-selector">
+              <span class="ratio-label">ขนาดอัตราส่วน:</span>
+              <div class="ratio-btn-group" id="ratioBtnGroup">
+                <button class="ratio-btn is-active" type="button" data-ratio="1:1">
+                  <i class="fa-solid fa-square"></i>
+                  <span>1:1 (Post)</span>
+                </button>
+                <button class="ratio-btn" type="button" data-ratio="9:16">
+                  <i class="fa-solid fa-mobile-screen-button"></i>
+                  <span>9:16 (Story)</span>
+                </button>
+              </div>
+            </div>
 
             <div class="export-theme-grid" id="exportThemeGrid">
               <button class="export-theme-card" type="button" data-theme="sunset">
                 <span class="theme-swatch" style="background: linear-gradient(135deg, #e95f3d 50%, #f1dcc9 50%);"></span>
-                <span class="theme-name">Warm Sunset</span>
+                <span class="theme-name">สีหลัก</span>
               </button>
-              <button class="export-theme-card" type="button" data-theme="emerald">
-                <span class="theme-swatch" style="background: linear-gradient(135deg, #2d6a4f 50%, #d8f3dc 50%);"></span>
-                <span class="theme-name">Forest Emerald</span>
+              <button class="export-theme-card" type="button" data-theme="babyblue">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #0284c7 50%, #bae6fd 50%);"></span>
+                <span class="theme-name">สีฟ้าอ่อน</span>
               </button>
-              <button class="export-theme-card" type="button" data-theme="ocean">
-                <span class="theme-swatch" style="background: linear-gradient(135deg, #1d3557 50%, #a8dadc 50%);"></span>
-                <span class="theme-name">Ocean Blue</span>
-              </button>
-              <button class="export-theme-card" type="button" data-theme="midnight">
-                <span class="theme-swatch" style="background: linear-gradient(135deg, #ff6b6b 50%, #343a40 50%);"></span>
-                <span class="theme-name">Midnight Dark</span>
-              </button>
-              <button class="export-theme-card" type="button" data-theme="sakura">
-                <span class="theme-swatch" style="background: linear-gradient(135deg, #e63946 50%, #ffccd5 50%);"></span>
-                <span class="theme-name">Sakura Pink</span>
+              <button class="export-theme-card" type="button" data-theme="cottoncandy">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #db2777 50%, #fbcfe8 50%);"></span>
+                <span class="theme-name">สีชมพูอ่อน</span>
               </button>
             </div>
 

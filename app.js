@@ -2,12 +2,13 @@ const MAP_WIDTH = 720;
 const MAP_HEIGHT = 980;
 const STORAGE_KEY = "thailand-visited-provinces";
 const EXPORT_THEME_STORAGE_KEY = "thailand-visited-export-theme";
+const EXPORT_RATIO_STORAGE_KEY = "thailand-visited-export-ratio";
 const FONT_STACK = "'LINE Seed Sans TH', 'Segoe UI', Tahoma, sans-serif";
 const TOTAL_THAILAND_AREA = 513120;
 
 const MAP_THEMES = {
   sunset: {
-    name: "Warm Sunset",
+    name: "สีหลัก",
     brand: "#e95f3d",
     brandDark: "#b83f27",
     bg: "#f6f2eb",
@@ -19,57 +20,31 @@ const MAP_THEMES = {
     unvisited: "#f1dcc9",
     hover: "#3f8c7a"
   },
-  emerald: {
-    name: "Forest Emerald",
-    brand: "#2d6a4f",
-    brandDark: "#1b4332",
-    bg: "#f0f7f4",
-    ink: "#1b2a26",
-    muted: "#5c756e",
-    line: "#c8dfd5",
-    paper: "#f7fcf9",
-    visited: "#2d6a4f",
-    unvisited: "#d8f3dc",
-    hover: "#d97706"
+  babyblue: {
+    name: "สีฟ้าอ่อน",
+    brand: "#0284c7",
+    brandDark: "#0369a1",
+    bg: "#ffffff",
+    ink: "#0f172a",
+    muted: "#475569",
+    line: "#7dd3fc",
+    paper: "#f0f9ff",
+    visited: "#0284c7",
+    unvisited: "#bae6fd",
+    hover: "#38bdf8"
   },
-  ocean: {
-    name: "Ocean Blue",
-    brand: "#1d3557",
-    brandDark: "#0f2139",
-    bg: "#f1faee",
-    ink: "#13253a",
-    muted: "#457b9d",
-    line: "#a8dadc",
-    paper: "#f8fdff",
-    visited: "#1d3557",
-    unvisited: "#cbdadb",
-    hover: "#e63946"
-  },
-  midnight: {
-    name: "Midnight Dark",
-    brand: "#ff6b6b",
-    brandDark: "#e05656",
-    bg: "#181b20",
-    ink: "#f1f3f5",
-    muted: "#909296",
-    line: "#2c3038",
-    paper: "#21252b",
-    visited: "#ff6b6b",
-    unvisited: "#343a40",
-    hover: "#4ecdc4"
-  },
-  sakura: {
-    name: "Sakura Pink",
-    brand: "#e63946",
-    brandDark: "#b82431",
-    bg: "#fff5f5",
-    ink: "#331a1e",
-    muted: "#9e6b73",
-    line: "#f7cad0",
-    paper: "#fffafb",
-    visited: "#e63946",
-    unvisited: "#ffccd5",
-    hover: "#457b9d"
+  cottoncandy: {
+    name: "สีชมพูอ่อน",
+    brand: "#db2777",
+    brandDark: "#9d174d",
+    bg: "#ffffff",
+    ink: "#831843",
+    muted: "#9d174d",
+    line: "#f472b6",
+    paper: "#fdf2f8",
+    visited: "#db2777",
+    unvisited: "#fbcfe8",
+    hover: "#f472b6"
   }
 };
 
@@ -186,6 +161,7 @@ const state = {
   listMode: "unvisited",
   visited: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")),
   exportTheme: localStorage.getItem(EXPORT_THEME_STORAGE_KEY) || "sunset",
+  exportRatio: localStorage.getItem(EXPORT_RATIO_STORAGE_KEY) || "1:1",
   search: ""
 };
 
@@ -199,7 +175,6 @@ const activeProvince = document.querySelector("#activeProvince");
 const activeStatus = document.querySelector("#activeStatus");
 const resetButton = document.querySelector("#resetButton");
 const shareButton = document.querySelector("#shareButton");
-const sidebarShareButton = document.querySelector("#sidebarShareButton");
 const showVisitedButton = document.querySelector("#showVisitedButton");
 const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
 const zoomInButton = document.querySelector("#zoomInButton");
@@ -209,6 +184,7 @@ const zoomResetButton = document.querySelector("#zoomResetButton");
 const shareModal = document.querySelector("#shareModal");
 const closeShareModal = document.querySelector("#closeShareModal");
 const exportThemeCards = document.querySelectorAll(".export-theme-card");
+const ratioBtns = document.querySelectorAll(".ratio-btn");
 const sharePreviewCanvas = document.querySelector("#sharePreviewCanvas");
 const downloadShareImageButton = document.querySelector("#downloadShareImageButton");
 
@@ -253,23 +229,49 @@ function updateSharePreview(themeKey) {
     card.classList.toggle("is-active", card.dataset.theme === themeKey);
   });
 
+  ratioBtns.forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.ratio === state.exportRatio);
+  });
+
   if (!sharePreviewCanvas) return;
+
+  const is916 = state.exportRatio === "9:16";
+  const canvasWidth = 1080;
+  const canvasHeight = is916 ? 1920 : 1080;
+
+  sharePreviewCanvas.width = canvasWidth;
+  sharePreviewCanvas.height = canvasHeight;
+
+  const box = sharePreviewCanvas.parentElement;
+  if (box) {
+    box.setAttribute("data-ratio", state.exportRatio);
+  }
+
   const ctx = sharePreviewCanvas.getContext("2d");
   const visited = getVisitedFeatures();
   const percent = Math.round((visited.length / 77) * 100);
   const theme = MAP_THEMES[themeKey] || MAP_THEMES.sunset;
 
-  ctx.clearRect(0, 0, 1080, 1080);
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   ctx.fillStyle = theme.bg;
-  ctx.fillRect(0, 0, 1080, 1080);
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  drawExportHeader(ctx, visited.length, percent, theme);
-  drawExportMap(ctx, theme);
-  drawExportLegend(ctx, theme);
-  drawExportInsights(ctx, theme);
-  drawExportList(ctx, visited, theme);
-  drawExportUrl(ctx, theme);
-  drawExportCredit(ctx, theme);
+  if (is916) {
+    drawExportHeader916(ctx, visited.length, percent, theme);
+    drawExportMap916(ctx, theme);
+    drawExportLegend916(ctx, theme);
+    drawExportInsights916(ctx, theme);
+    drawExportList916(ctx, visited, theme);
+    drawExportFooter916(ctx, theme);
+  } else {
+    drawExportHeader(ctx, visited.length, percent, theme);
+    drawExportMap(ctx, theme);
+    drawExportLegend(ctx, theme);
+    drawExportInsights(ctx, theme);
+    drawExportList(ctx, visited, theme);
+    drawExportUrl(ctx, theme);
+    drawExportCredit(ctx, theme);
+  }
 }
 
 function openShareModal() {
@@ -286,6 +288,14 @@ function closeShareModalFunc() {
 exportThemeCards.forEach((card) => {
   card.addEventListener("click", () => {
     updateSharePreview(card.dataset.theme);
+  });
+});
+
+ratioBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    state.exportRatio = btn.dataset.ratio;
+    localStorage.setItem(EXPORT_RATIO_STORAGE_KEY, btn.dataset.ratio);
+    updateSharePreview(state.exportTheme);
   });
 });
 
@@ -714,25 +724,36 @@ async function handleDownloadShareImage() {
 }
 
 function createShareImage() {
-  const size = 1080;
+  const is916 = state.exportRatio === "9:16";
+  const canvasWidth = 1080;
+  const canvasHeight = is916 ? 1920 : 1080;
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
   const ctx = canvas.getContext("2d");
   const visited = getVisitedFeatures();
   const percent = Math.round((visited.length / 77) * 100);
   const theme = MAP_THEMES[state.exportTheme] || MAP_THEMES.sunset;
 
   ctx.fillStyle = theme.bg;
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  drawExportHeader(ctx, visited.length, percent, theme);
-  drawExportMap(ctx, theme);
-  drawExportLegend(ctx, theme);
-  drawExportInsights(ctx, theme);
-  drawExportList(ctx, visited, theme);
-  drawExportUrl(ctx, theme);
-  drawExportCredit(ctx, theme);
+  if (is916) {
+    drawExportHeader916(ctx, visited.length, percent, theme);
+    drawExportMap916(ctx, theme);
+    drawExportLegend916(ctx, theme);
+    drawExportInsights916(ctx, theme);
+    drawExportList916(ctx, visited, theme);
+    drawExportFooter916(ctx, theme);
+  } else {
+    drawExportHeader(ctx, visited.length, percent, theme);
+    drawExportMap(ctx, theme);
+    drawExportLegend(ctx, theme);
+    drawExportInsights(ctx, theme);
+    drawExportList(ctx, visited, theme);
+    drawExportUrl(ctx, theme);
+    drawExportCredit(ctx, theme);
+  }
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -745,11 +766,63 @@ function createShareImage() {
   });
 }
 
+const USER_QR_MATRIX = [
+  [1,1,1,1,1,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,1,0,1,1,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,1,0,1],
+  [1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,0,1,1,1,0,1],
+  [1,0,1,1,1,0,1,0,0,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+  [0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0],
+  [1,1,0,0,1,1,1,0,0,0,1,0,1,0,1,1,0,0,0,1,0,1,1,1,1],
+  [0,0,0,1,1,1,0,1,1,0,0,1,0,0,1,1,1,0,0,0,1,1,0,1,0],
+  [1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0],
+  [1,0,0,1,1,1,0,0,0,1,0,1,1,0,0,0,1,0,0,1,1,0,1,1,0],
+  [1,0,1,0,1,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,1,1],
+  [1,0,0,0,0,0,0,0,1,0,1,1,0,0,1,1,1,0,0,0,1,0,0,1,0],
+  [0,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,0,1,0,1,1,1,1,0,0],
+  [0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,0,1,1,1,1,0,1,1,0],
+  [1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0],
+  [0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,0],
+  [1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,0,1,0,1,0,1,0,0,0,0],
+  [1,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,1,0,0,0,1,1,1,1,1],
+  [1,0,1,1,1,0,1,0,1,0,0,1,1,0,1,0,1,1,1,1,1,1,1,1,0],
+  [1,0,1,1,1,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,1,1],
+  [1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,0,1,1,1,0,0,1,0,1,0],
+  [1,0,0,0,0,0,1,0,1,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0],
+  [1,1,1,1,1,1,1,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1]
+];
+
+function drawQRCode(ctx, text, x, y, size, theme) {
+  const count = USER_QR_MATRIX.length;
+  const padding = 6;
+  const innerSize = size - padding * 2;
+  const cellSize = innerSize / count;
+
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, x, y, size, size, 8);
+  ctx.fill();
+
+  ctx.fillStyle = "#111111";
+  for (let r = 0; r < count; r++) {
+    for (let c = 0; c < count; c++) {
+      if (USER_QR_MATRIX[r][c] === 1) {
+        const px = x + padding + c * cellSize;
+        const py = y + padding + r * cellSize;
+        ctx.fillRect(px, py, cellSize + 0.35, cellSize + 0.35);
+      }
+    }
+  }
+  ctx.restore();
+}
+
 function drawExportUrl(ctx, theme) {
   ctx.fillStyle = theme.muted;
   ctx.font = `600 18px ${FONT_STACK}`;
-  ctx.textAlign = "center";
-  ctx.fillText("lab.termtem.in.th/maps", 540, 1042);
+  ctx.textAlign = "right";
+  ctx.fillText("lab.termtem.in.th/maps", 1026, 1040);
   ctx.textAlign = "start";
 }
 
@@ -757,28 +830,30 @@ function drawExportCredit(ctx, theme) {
   ctx.fillStyle = theme.muted;
   ctx.font = `500 14px ${FONT_STACK}`;
   ctx.textAlign = "left";
-  ctx.fillText("Map Vector: github.com/BorntoDev/Thailand-Map-Vector", 54, 1042);
+  ctx.fillText("Map Vector: github.com/BorntoDev/Thailand-Map-Vector", 54, 1040);
   ctx.textAlign = "start";
 }
 
 function drawExportHeader(ctx, count, percent, theme) {
+  drawQRCode(ctx, "http://lab.termtem.in.th/maps", 946, 44, 80, theme);
+
   ctx.fillStyle = theme.brandDark;
   ctx.font = `700 28px ${FONT_STACK}`;
-  ctx.fillText("Thailand Visited", 64, 72);
+  ctx.fillText("Thailand Visited", 54, 68);
 
   ctx.fillStyle = theme.ink;
   ctx.font = `800 54px ${FONT_STACK}`;
-  ctx.fillText(`ไปมาแล้ว ${count} จังหวัด`, 64, 134);
+  ctx.fillText(`ไปมาแล้ว ${count} จังหวัด`, 54, 126);
 
   ctx.fillStyle = theme.muted;
   ctx.font = `700 24px ${FONT_STACK}`;
-  ctx.fillText(`คิดเป็น ${percent}% จาก 77 จังหวัด`, 64, 174);
+  ctx.fillText(`คิดเป็น ${percent}% จาก 77 จังหวัด`, 54, 164);
 }
 
 function drawExportMap(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 54, y: 194, width: 420, height: 600 };
+  const mapBox = { x: 30, y: 170, width: 495, height: 800 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -792,7 +867,7 @@ function drawExportMap(ctx, theme) {
     const path = new Path2D(geometryToPath(feature.geometry, project));
     ctx.fillStyle = state.visited.has(province) ? theme.visited : theme.unvisited;
     ctx.strokeStyle = theme.paper;
-    ctx.lineWidth = 1.7;
+    ctx.lineWidth = 1.8;
     ctx.fill(path);
     ctx.stroke(path);
   });
@@ -800,9 +875,165 @@ function drawExportMap(ctx, theme) {
   ctx.restore();
 }
 
-function drawExportLegend(ctx, theme) {
+function drawExportHeader916(ctx, count, percent, theme) {
+  drawQRCode(ctx, "http://lab.termtem.in.th/maps", 926, 54, 96, theme);
+
+  ctx.fillStyle = theme.brandDark;
+  ctx.font = `700 32px ${FONT_STACK}`;
+  ctx.fillText("Thailand Visited", 64, 82);
+
+  ctx.fillStyle = theme.ink;
+  ctx.font = `800 62px ${FONT_STACK}`;
+  ctx.fillText(`ไปมาแล้ว ${count} จังหวัด`, 64, 148);
+
+  ctx.fillStyle = theme.muted;
+  ctx.font = `700 26px ${FONT_STACK}`;
+  ctx.fillText(`คิดเป็น ${percent}% จาก 77 จังหวัด`, 64, 192);
+}
+
+function drawExportMap916(ctx, theme) {
+  const bounds = getBounds(state.features);
+  const project = createProjector(bounds);
+  const mapBox = { x: 40, y: 200, width: 1000, height: 980 };
+  const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
+  const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
+  const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
+  state.features.forEach((feature) => {
+    const province = feature.properties.NAME_1;
+    const path = new Path2D(geometryToPath(feature.geometry, project));
+    ctx.fillStyle = state.visited.has(province) ? theme.visited : theme.unvisited;
+    ctx.strokeStyle = theme.paper;
+    ctx.lineWidth = 2.0;
+    ctx.fill(path);
+    ctx.stroke(path);
+  });
+
+  ctx.restore();
+}
+
+function drawExportLegend916(ctx, theme) {
   const x = 74;
-  const y = 812;
+  const y = 1195;
+  ctx.font = `800 20px ${FONT_STACK}`;
+  drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
+  drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
+}
+
+function drawExportInsights916(ctx, theme) {
+  const insights = getTravelInsights();
+  const boxX = 54;
+  const boxY = 1220;
+  const boxW = 972;
+  const boxH = 160;
+
+  ctx.fillStyle = theme.paper;
+  roundRect(ctx, boxX, boxY, boxW, boxH, 16);
+  ctx.fill();
+  ctx.strokeStyle = theme.line;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+
+  ctx.fillStyle = theme.brandDark;
+  ctx.font = `800 21px ${FONT_STACK}`;
+  ctx.fillText("สถิติเชิงลึก (Travel Insights)", boxX + 24, boxY + 34);
+
+  ctx.font = `600 16px ${FONT_STACK}`;
+  ctx.fillStyle = theme.muted;
+  ctx.fillText("เหนือสุด:", boxX + 24, boxY + 70);
+  ctx.fillText("ใต้สุด:", boxX + 260, boxY + 70);
+  ctx.fillText("ตะวันออกสุด:", boxX + 500, boxY + 70);
+  ctx.fillText("ตะวันตกสุด:", boxX + 750, boxY + 70);
+
+  ctx.fillStyle = theme.ink;
+  ctx.font = `700 16px ${FONT_STACK}`;
+  ctx.fillText(insights.north, boxX + 96, boxY + 70);
+  ctx.fillText(insights.south, boxX + 312, boxY + 70);
+  ctx.fillText(insights.east, boxX + 600, boxY + 70);
+  ctx.fillText(insights.west, boxX + 834, boxY + 70);
+
+  ctx.strokeStyle = theme.line;
+  ctx.beginPath();
+  ctx.moveTo(boxX + 24, boxY + 104);
+  ctx.lineTo(boxX + boxW - 24, boxY + 104);
+  ctx.stroke();
+
+  ctx.fillStyle = theme.muted;
+  ctx.font = `600 16px ${FONT_STACK}`;
+  ctx.fillText("พื้นที่สะสม:", boxX + 24, boxY + 136);
+
+  ctx.fillStyle = theme.brandDark;
+  ctx.font = `800 17px ${FONT_STACK}`;
+  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}% ของประเทศไทย)`, boxX + 116, boxY + 136);
+}
+
+function drawExportList916(ctx, visited, theme) {
+  const cardX = 54;
+  const cardY = 1400;
+  const cardWidth = 972;
+  const cardHeight = 440;
+  const x = cardX + 28;
+  const y = cardY + 48;
+  const width = cardWidth - 56;
+  const names = visited.map(getThaiName);
+
+  ctx.fillStyle = theme.paper;
+  roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20);
+  ctx.fill();
+  ctx.strokeStyle = theme.line;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+
+  ctx.fillStyle = theme.ink;
+  ctx.font = `800 28px ${FONT_STACK}`;
+  ctx.fillText("รายชื่อจังหวัดที่เคยไป", x, y);
+
+  if (!names.length) {
+    ctx.fillStyle = theme.muted;
+    ctx.font = `700 22px ${FONT_STACK}`;
+    ctx.fillText("ยังไม่ได้เลือกจังหวัด", x, y + 48);
+    return;
+  }
+
+  const columns = 4;
+  const rows = Math.ceil(names.length / columns);
+  const columnWidth = Math.floor(width / columns);
+  const lineHeight = 30;
+
+  ctx.font = `700 18px ${FONT_STACK}`;
+
+  names.forEach((name, index) => {
+    const col = Math.floor(index / rows);
+    const row = index % rows;
+    const textX = x + col * columnWidth;
+    const textY = y + 46 + row * lineHeight;
+    if (textY < cardY + cardHeight - 16) {
+      ctx.fillStyle = theme.visited;
+      ctx.fillText("•", textX, textY);
+      ctx.fillStyle = theme.ink;
+      fitText(ctx, name, textX + 16, textY, columnWidth - 24);
+    }
+  });
+}
+
+function drawExportFooter916(ctx, theme) {
+  ctx.fillStyle = theme.muted;
+  ctx.font = `500 15px ${FONT_STACK}`;
+  ctx.textAlign = "left";
+  ctx.fillText("Map Vector: github.com/BorntoDev/Thailand-Map-Vector", 64, 1875);
+  ctx.textAlign = "right";
+  ctx.font = `600 18px ${FONT_STACK}`;
+  ctx.fillText("lab.termtem.in.th/maps", 1016, 1875);
+  ctx.textAlign = "start";
+}
+
+function drawExportLegend(ctx, theme) {
+  const x = 50;
+  const y = 980;
   ctx.font = `800 20px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
   drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
@@ -822,97 +1053,97 @@ function drawLegendItem(ctx, x, y, color, label, theme) {
 
 function drawExportInsights(ctx, theme) {
   const insights = getTravelInsights();
-  const boxX = 54;
-  const boxY = 832;
-  const boxW = 420;
-  const boxH = 154;
+  const boxX = 540;
+  const boxY = 830;
+  const boxW = 506;
+  const boxH = 180;
 
   ctx.fillStyle = theme.paper;
-  roundRect(ctx, boxX, boxY, boxW, boxH, 14);
+  roundRect(ctx, boxX, boxY, boxW, boxH, 16);
   ctx.fill();
   ctx.strokeStyle = theme.line;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.4;
   ctx.stroke();
 
   ctx.fillStyle = theme.brandDark;
   ctx.font = `800 19px ${FONT_STACK}`;
-  ctx.fillText("สถิติเชิงลึก (Insights)", boxX + 16, boxY + 30);
+  ctx.fillText("สถิติเชิงลึก (Travel Insights)", boxX + 20, boxY + 32);
 
   ctx.font = `600 15px ${FONT_STACK}`;
   ctx.fillStyle = theme.muted;
-  ctx.fillText("เหนือสุด:", boxX + 16, boxY + 62);
-  ctx.fillText("ใต้สุด:", boxX + 224, boxY + 62);
-  ctx.fillText("ตะวันออกสุด:", boxX + 16, boxY + 90);
-  ctx.fillText("ตะวันตกสุด:", boxX + 224, boxY + 90);
+  ctx.fillText("เหนือสุด:", boxX + 20, boxY + 66);
+  ctx.fillText("ใต้สุด:", boxX + 250, boxY + 66);
+  ctx.fillText("ตะวันออกสุด:", boxX + 20, boxY + 96);
+  ctx.fillText("ตะวันตกสุด:", boxX + 250, boxY + 96);
 
   ctx.fillStyle = theme.ink;
   ctx.font = `700 15px ${FONT_STACK}`;
-  ctx.fillText(insights.north, boxX + 88, boxY + 62);
-  ctx.fillText(insights.south, boxX + 276, boxY + 62);
-  ctx.fillText(insights.east, boxX + 116, boxY + 90);
-  ctx.fillText(insights.west, boxX + 308, boxY + 90);
+  ctx.fillText(insights.north, boxX + 90, boxY + 66);
+  ctx.fillText(insights.south, boxX + 302, boxY + 66);
+  ctx.fillText(insights.east, boxX + 118, boxY + 96);
+  ctx.fillText(insights.west, boxX + 332, boxY + 96);
 
   ctx.strokeStyle = theme.line;
   ctx.beginPath();
-  ctx.moveTo(boxX + 16, boxY + 106);
-  ctx.lineTo(boxX + boxW - 16, boxY + 106);
+  ctx.moveTo(boxX + 20, boxY + 118);
+  ctx.lineTo(boxX + boxW - 20, boxY + 118);
   ctx.stroke();
 
   ctx.fillStyle = theme.muted;
   ctx.font = `600 15px ${FONT_STACK}`;
-  ctx.fillText("พื้นที่สะสม:", boxX + 16, boxY + 134);
+  ctx.fillText("พื้นที่สะสม:", boxX + 20, boxY + 152);
 
   ctx.fillStyle = theme.brandDark;
   ctx.font = `800 16px ${FONT_STACK}`;
-  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}%)`, boxX + 104, boxY + 134);
+  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}% ของประเทศ)`, boxX + 104, boxY + 152);
 }
 
 function drawExportList(ctx, visited, theme) {
-  const cardX = 496;
-  const cardY = 194;
-  const cardWidth = 530;
-  const cardHeight = 792;
-  const x = cardX + 28;
-  const y = cardY + 54;
-  const width = cardWidth - 56;
+  const cardX = 540;
+  const cardY = 170;
+  const cardWidth = 506;
+  const cardHeight = 644;
+  const x = cardX + 24;
+  const y = cardY + 48;
+  const width = cardWidth - 48;
   const names = visited.map(getThaiName);
 
   ctx.fillStyle = theme.paper;
-  roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 22);
+  roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20);
   ctx.fill();
   ctx.strokeStyle = theme.line;
   ctx.lineWidth = 1.4;
   ctx.stroke();
 
   ctx.fillStyle = theme.ink;
-  ctx.font = `800 32px ${FONT_STACK}`;
+  ctx.font = `800 30px ${FONT_STACK}`;
   ctx.fillText("รายชื่อจังหวัด", x, y);
 
   if (!names.length) {
     ctx.fillStyle = theme.muted;
-    ctx.font = `700 24px ${FONT_STACK}`;
+    ctx.font = `700 22px ${FONT_STACK}`;
     ctx.fillText("ยังไม่ได้เลือกจังหวัด", x, y + 48);
     return;
   }
 
-  const columns = names.length > 48 ? 3 : 2;
+  const columns = names.length > 40 ? 3 : 2;
   const rows = Math.ceil(names.length / columns);
-  const columnWidth = width / columns;
-  const dense = names.length > 34;
-  const fontSize = dense ? 18 : 21;
-  const availableListHeight = cardHeight - 126;
-  const lineHeight = clamp(Math.floor(availableListHeight / Math.max(rows, 1)), dense ? 23 : 30, dense ? 27 : 42);
-  ctx.font = `${dense ? 600 : 700} ${fontSize}px ${FONT_STACK}`;
+  const columnWidth = Math.floor(width / columns);
+  const lineHeight = 28;
+
+  ctx.font = `700 17px ${FONT_STACK}`;
 
   names.forEach((name, index) => {
-    const column = Math.floor(index / rows);
+    const col = Math.floor(index / rows);
     const row = index % rows;
-    const textX = x + column * columnWidth;
-    const textY = y + 52 + row * lineHeight;
-    ctx.fillStyle = theme.visited;
-    ctx.fillText("•", textX, textY);
-    ctx.fillStyle = theme.ink;
-    fitText(ctx, name, textX + 16, textY, columnWidth - 24);
+    const textX = x + col * columnWidth;
+    const textY = y + 44 + row * lineHeight;
+    if (textY < cardY + cardHeight - 14) {
+      ctx.fillStyle = theme.visited;
+      ctx.fillText("•", textX, textY);
+      ctx.fillStyle = theme.ink;
+      fitText(ctx, name, textX + 14, textY, columnWidth - 20);
+    }
   });
 }
 
@@ -982,7 +1213,6 @@ resetButton.addEventListener("click", () => {
 });
 
 if (shareButton) shareButton.addEventListener("click", openShareModal);
-if (sidebarShareButton) sidebarShareButton.addEventListener("click", openShareModal);
 if (downloadShareImageButton) downloadShareImageButton.addEventListener("click", handleDownloadShareImage);
 
 zoomInButton.addEventListener("click", () => zoomMap(0.78));
