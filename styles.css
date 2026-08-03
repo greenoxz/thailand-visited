@@ -83,6 +83,13 @@ h1 {
   letter-spacing: 0;
 }
 
+.topbar-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .summary {
   display: grid;
   place-items: center;
