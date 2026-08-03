@@ -199,6 +199,7 @@ const activeProvince = document.querySelector("#activeProvince");
 const activeStatus = document.querySelector("#activeStatus");
 const resetButton = document.querySelector("#resetButton");
 const shareButton = document.querySelector("#shareButton");
+const sidebarShareButton = document.querySelector("#sidebarShareButton");
 const showVisitedButton = document.querySelector("#showVisitedButton");
 const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
 const zoomInButton = document.querySelector("#zoomInButton");
@@ -207,8 +208,9 @@ const zoomResetButton = document.querySelector("#zoomResetButton");
 
 const shareModal = document.querySelector("#shareModal");
 const closeShareModal = document.querySelector("#closeShareModal");
-const confirmShareButton = document.querySelector("#confirmShareButton");
 const exportThemeCards = document.querySelectorAll(".export-theme-card");
+const sharePreviewCanvas = document.querySelector("#sharePreviewCanvas");
+const downloadShareImageButton = document.querySelector("#downloadShareImageButton");
 
 init();
 
@@ -243,16 +245,35 @@ async function init() {
   }
 }
 
-function updateExportThemeSelection(themeKey) {
+function updateSharePreview(themeKey) {
   state.exportTheme = themeKey;
   localStorage.setItem(EXPORT_THEME_STORAGE_KEY, themeKey);
+
   exportThemeCards.forEach((card) => {
     card.classList.toggle("is-active", card.dataset.theme === themeKey);
   });
+
+  if (!sharePreviewCanvas) return;
+  const ctx = sharePreviewCanvas.getContext("2d");
+  const visited = getVisitedFeatures();
+  const percent = Math.round((visited.length / 77) * 100);
+  const theme = MAP_THEMES[themeKey] || MAP_THEMES.sunset;
+
+  ctx.clearRect(0, 0, 1080, 1080);
+  ctx.fillStyle = theme.bg;
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  drawExportHeader(ctx, visited.length, percent, theme);
+  drawExportMap(ctx, theme);
+  drawExportLegend(ctx, theme);
+  drawExportInsights(ctx, theme);
+  drawExportList(ctx, visited, theme);
+  drawExportUrl(ctx, theme);
+  drawExportCredit(ctx, theme);
 }
 
 function openShareModal() {
-  updateExportThemeSelection(state.exportTheme);
+  updateSharePreview(state.exportTheme);
   shareModal.classList.add("is-open");
   shareModal.setAttribute("aria-hidden", "false");
 }
@@ -264,7 +285,7 @@ function closeShareModalFunc() {
 
 exportThemeCards.forEach((card) => {
   card.addEventListener("click", () => {
-    updateExportThemeSelection(card.dataset.theme);
+    updateSharePreview(card.dataset.theme);
   });
 });
 
@@ -584,10 +605,87 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-async function handleConfirmShare() {
+function zoomMapToCenter(factor, initialViewBox) {
+  const nextWidth = clamp(initialViewBox.width * factor, MAP_WIDTH / 4, MAP_WIDTH);
+  const nextHeight = clamp(initialViewBox.height * factor, MAP_HEIGHT / 4, MAP_HEIGHT);
+  const centerX = initialViewBox.x + initialViewBox.width / 2;
+  const centerY = initialViewBox.y + initialViewBox.height / 2;
+  state.mapViewBox = clampViewBox({
+    x: centerX - nextWidth / 2,
+    y: centerY - nextHeight / 2,
+    width: nextWidth,
+    height: nextHeight
+  });
+  applyMapViewBox();
+}
+
+function startMapPan(event) {
+  if (event.button !== 0) return;
+  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  const pointers = [...state.pointers.values()];
+  if (pointers.length === 2) {
+    state.pan = null;
+    state.pinch = { distance: getPointerDistance(pointers[0], pointers[1]), viewBox: { ...state.mapViewBox }, moved: false };
+    return;
+  }
+  if (pointers.length > 2) return;
+  state.pan = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startViewBox: { ...state.mapViewBox }, moved: false };
+}
+
+function moveMapPan(event) {
+  if (!state.pointers.has(event.pointerId)) return;
+  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  const pointers = [...state.pointers.values()];
+  if (state.pinch && pointers.length >= 2) {
+    const distance = getPointerDistance(pointers[0], pointers[1]);
+    const factor = state.pinch.distance / Math.max(distance, 1);
+    zoomMapToCenter(factor, state.pinch.viewBox);
+    state.pinch.moved = true;
+    state.suppressNextClick = true;
+    return;
+  }
+  if (!state.pan || state.pan.pointerId !== event.pointerId) return;
+  const deltaX = event.clientX - state.pan.startX;
+  const deltaY = event.clientY - state.pan.startY;
+  if (Math.hypot(deltaX, deltaY) > 5) {
+    state.pan.moved = true;
+    state.suppressNextClick = true;
+  }
+  const scaleX = state.mapViewBox.width / map.clientWidth;
+  const scaleY = state.mapViewBox.height / map.clientHeight;
+  state.mapViewBox = clampViewBox({
+    x: state.pan.startViewBox.x - deltaX * scaleX,
+    y: state.pan.startViewBox.y - deltaY * scaleY,
+    width: state.mapViewBox.width,
+    height: state.mapViewBox.height
+  });
+  applyMapViewBox();
+}
+
+function endMapPan(event) {
+  state.pointers.delete(event.pointerId);
+  if (state.pointers.size < 2) {
+    state.pinch = null;
+  }
+  if (state.pan && state.pan.pointerId === event.pointerId) {
+    if (state.pan.moved) {
+      state.suppressNextClick = true;
+    }
+    state.pan = null;
+  }
+}
+
+function getPointerDistance(p1, p2) {
+  return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+async function handleDownloadShareImage() {
   try {
-    confirmShareButton.disabled = true;
-    confirmShareButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>กำลังสร้างภาพ...</span>';
+    if (downloadShareImageButton) {
+      downloadShareImageButton.disabled = true;
+      downloadShareImageButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>กำลังสร้างภาพ...</span>';
+    }
+
     const blob = await createShareImage();
 
     if (typeof File !== "undefined" && navigator.canShare && navigator.share) {
@@ -608,8 +706,10 @@ async function handleConfirmShare() {
   } catch (error) {
     console.error(error);
   } finally {
-    confirmShareButton.disabled = false;
-    confirmShareButton.innerHTML = '<i class="fa-solid fa-download"></i><span>ดาวน์โหลด / แชร์ภาพ</span>';
+    if (downloadShareImageButton) {
+      downloadShareImageButton.disabled = false;
+      downloadShareImageButton.innerHTML = '<i class="fa-solid fa-download"></i><span>ดาวน์โหลด / แชร์ภาพนี้</span>';
+    }
   }
 }
 
@@ -881,8 +981,9 @@ resetButton.addEventListener("click", () => {
   activeStatus.textContent = "กดที่จังหวัดเพื่อเปลี่ยนสถานะ";
 });
 
-shareButton.addEventListener("click", openShareModal);
-confirmShareButton.addEventListener("click", handleConfirmShare);
+if (shareButton) shareButton.addEventListener("click", openShareModal);
+if (sidebarShareButton) sidebarShareButton.addEventListener("click", openShareModal);
+if (downloadShareImageButton) downloadShareImageButton.addEventListener("click", handleDownloadShareImage);
 
 zoomInButton.addEventListener("click", () => zoomMap(0.78));
 zoomOutButton.addEventListener("click", () => zoomMap(1.28));

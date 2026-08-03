@@ -25,8 +25,8 @@
               <span id="activeStatus">กดที่จังหวัดเพื่อเปลี่ยนสถานะ</span>
             </div>
             <div class="toolbar-actions">
-              <button id="shareButton" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>แชร์ภาพ</span></button>
-              <button id="resetButton" type="button" aria-label="ล้างทั้งหมด" title="ล้างทั้งหมด"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span class="sr-only">ล้างทั้งหมด</span></button>
+              <button id="shareButton" class="btn-share-main" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span>แชร์ภาพ</span></button>
+              <button id="resetButton" type="button" aria-label="ล้างทั้งหมด" title="ล้างทั้งหมด"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span class="sr-only">ล้างทั้งหมด</span></button>
             </div>
           </div>
           <div class="map-zoom-controls" aria-label="ควบคุมการซูมแผนที่">
@@ -56,6 +56,11 @@
             <div class="summary-stat"><span id="visitedCount">0</span><span>/77</span></div>
             <span class="summary-label">จังหวัดที่ไปมาแล้ว</span>
           </div>
+
+          <button id="sidebarShareButton" class="btn-share-hero" type="button">
+            <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+            <span>แชร์ภาพสรุปการเดินทาง</span>
+          </button>
 
           <div class="insights-card" id="insightsCard">
             <div class="insights-header">
@@ -113,42 +118,48 @@
     </main>
 
     <div id="shareModal" class="modal-overlay" aria-hidden="true">
-      <div class="modal-card" role="dialog" aria-labelledby="shareModalTitle">
+      <div class="modal-card modal-card-lg" role="dialog" aria-labelledby="shareModalTitle">
         <div class="modal-header">
-          <h2 id="shareModalTitle"><i class="fa-solid fa-palette"></i> เลือกธีมสำหรับแชร์ภาพ</h2>
+          <h2 id="shareModalTitle"><i class="fa-solid fa-palette"></i> พรีวิว & เลือกธีมภาพแชร์</h2>
           <button id="closeShareModal" class="modal-close-btn" type="button" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="modal-body">
-          <p class="modal-subtitle">เลือกโทนสีสำหรับการ์ดรูปภาพสรุปการเดินทางของคุณ</p>
+        <div class="modal-body modal-body-split">
+          <div class="preview-column">
+            <div class="preview-box">
+              <canvas id="sharePreviewCanvas" width="1080" height="1080"></canvas>
+            </div>
+          </div>
+          <div class="options-column">
+            <p class="modal-subtitle">เลือกโทนสีการ์ดภาพที่คุณชอบ:</p>
 
-          <div class="export-theme-grid" id="exportThemeGrid">
-            <button class="export-theme-card is-active" type="button" data-theme="sunset">
-              <span class="theme-swatch" style="background: linear-gradient(135deg, #e95f3d 50%, #f1dcc9 50%);"></span>
-              <span class="theme-name">Warm Sunset</span>
-            </button>
-            <button class="export-theme-card" type="button" data-theme="emerald">
-              <span class="theme-swatch" style="background: linear-gradient(135deg, #2d6a4f 50%, #d8f3dc 50%);"></span>
-              <span class="theme-name">Forest Emerald</span>
-            </button>
-            <button class="export-theme-card" type="button" data-theme="ocean">
-              <span class="theme-swatch" style="background: linear-gradient(135deg, #1d3557 50%, #a8dadc 50%);"></span>
-              <span class="theme-name">Ocean Blue</span>
-            </button>
-            <button class="export-theme-card" type="button" data-theme="midnight">
-              <span class="theme-swatch" style="background: linear-gradient(135deg, #ff6b6b 50%, #343a40 50%);"></span>
-              <span class="theme-name">Midnight Dark</span>
-            </button>
-            <button class="export-theme-card" type="button" data-theme="sakura">
-              <span class="theme-swatch" style="background: linear-gradient(135deg, #e63946 50%, #ffccd5 50%);"></span>
-              <span class="theme-name">Sakura Pink</span>
+            <div class="export-theme-grid" id="exportThemeGrid">
+              <button class="export-theme-card" type="button" data-theme="sunset">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #e95f3d 50%, #f1dcc9 50%);"></span>
+                <span class="theme-name">Warm Sunset</span>
+              </button>
+              <button class="export-theme-card" type="button" data-theme="emerald">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #2d6a4f 50%, #d8f3dc 50%);"></span>
+                <span class="theme-name">Forest Emerald</span>
+              </button>
+              <button class="export-theme-card" type="button" data-theme="ocean">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #1d3557 50%, #a8dadc 50%);"></span>
+                <span class="theme-name">Ocean Blue</span>
+              </button>
+              <button class="export-theme-card" type="button" data-theme="midnight">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #ff6b6b 50%, #343a40 50%);"></span>
+                <span class="theme-name">Midnight Dark</span>
+              </button>
+              <button class="export-theme-card" type="button" data-theme="sakura">
+                <span class="theme-swatch" style="background: linear-gradient(135deg, #e63946 50%, #ffccd5 50%);"></span>
+                <span class="theme-name">Sakura Pink</span>
+              </button>
+            </div>
+
+            <button id="downloadShareImageButton" class="btn-confirm-share" type="button">
+              <i class="fa-solid fa-download"></i>
+              <span>ดาวน์โหลด / แชร์ภาพนี้</span>
             </button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button id="confirmShareButton" class="btn-confirm-share" type="button">
-            <i class="fa-solid fa-download"></i>
-            <span>ดาวน์โหลด / แชร์ภาพ</span>
-          </button>
         </div>
       </div>
     </div>
