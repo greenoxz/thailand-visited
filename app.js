@@ -1218,6 +1218,29 @@ resetButton.addEventListener("click", () => {
 if (shareButton) shareButton.addEventListener("click", openShareModal);
 if (downloadShareImageButton) downloadShareImageButton.addEventListener("click", handleDownloadShareImage);
 
+function handleMapWheel(event) {
+  event.preventDefault();
+  const zoomFactor = event.deltaY < 0 ? 0.85 : 1.18;
+  const rect = map.getBoundingClientRect();
+  const mouseX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * state.mapViewBox.width + state.mapViewBox.x;
+  const mouseY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * state.mapViewBox.height + state.mapViewBox.y;
+
+  const nextWidth = clamp(state.mapViewBox.width * zoomFactor, MAP_WIDTH / 4, MAP_WIDTH);
+  const nextHeight = clamp(state.mapViewBox.height * zoomFactor, MAP_HEIGHT / 4, MAP_HEIGHT);
+
+  const ratioX = (mouseX - state.mapViewBox.x) / state.mapViewBox.width;
+  const ratioY = (mouseY - state.mapViewBox.y) / state.mapViewBox.height;
+
+  state.mapViewBox = clampViewBox({
+    x: mouseX - ratioX * nextWidth,
+    y: mouseY - ratioY * nextHeight,
+    width: nextWidth,
+    height: nextHeight
+  });
+
+  applyMapViewBox();
+}
+
 zoomInButton.addEventListener("click", () => zoomMap(0.78));
 zoomOutButton.addEventListener("click", () => zoomMap(1.28));
 zoomResetButton.addEventListener("click", resetMapZoom);
@@ -1226,6 +1249,7 @@ map.addEventListener("pointerdown", startMapPan);
 map.addEventListener("pointermove", moveMapPan);
 map.addEventListener("pointerup", endMapPan);
 map.addEventListener("pointercancel", endMapPan);
+map.addEventListener("wheel", handleMapWheel, { passive: false });
 map.addEventListener("click", (event) => {
   if (state.suppressNextClick) {
     event.preventDefault();

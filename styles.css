@@ -133,7 +133,12 @@ h1 {
   position: relative;
   height: min(calc(76vh + 96px), 916px);
   min-height: 680px;
+  cursor: grab;
   padding: 0;
+}
+
+.map-area:active {
+  cursor: grabbing;
 }
 
 .map-toolbar {
