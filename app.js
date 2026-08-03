@@ -731,17 +731,17 @@ function drawExportInsights(ctx, theme) {
 
   ctx.font = `600 15px ${FONT_STACK}`;
   ctx.fillStyle = theme.muted;
-  ctx.fillText("🌲 เหนือสุด:", boxX + 16, boxY + 62);
-  ctx.fillText("🏖️ ใต้สุด:", boxX + 224, boxY + 62);
-  ctx.fillText("🌅 ตะวันออกสุด:", boxX + 16, boxY + 90);
-  ctx.fillText("⛰️ ตะวันตกสุด:", boxX + 224, boxY + 90);
+  ctx.fillText("เหนือสุด:", boxX + 16, boxY + 62);
+  ctx.fillText("ใต้สุด:", boxX + 224, boxY + 62);
+  ctx.fillText("ตะวันออกสุด:", boxX + 16, boxY + 90);
+  ctx.fillText("ตะวันตกสุด:", boxX + 224, boxY + 90);
 
   ctx.fillStyle = theme.ink;
   ctx.font = `700 15px ${FONT_STACK}`;
-  ctx.fillText(insights.north, boxX + 110, boxY + 62);
-  ctx.fillText(insights.south, boxX + 300, boxY + 62);
-  ctx.fillText(insights.east, boxX + 138, boxY + 90);
-  ctx.fillText(insights.west, boxX + 330, boxY + 90);
+  ctx.fillText(insights.north, boxX + 88, boxY + 62);
+  ctx.fillText(insights.south, boxX + 276, boxY + 62);
+  ctx.fillText(insights.east, boxX + 116, boxY + 90);
+  ctx.fillText(insights.west, boxX + 308, boxY + 90);
 
   ctx.strokeStyle = theme.line;
   ctx.beginPath();
@@ -751,11 +751,11 @@ function drawExportInsights(ctx, theme) {
 
   ctx.fillStyle = theme.muted;
   ctx.font = `600 15px ${FONT_STACK}`;
-  ctx.fillText("🗺️ พื้นที่สะสม:", boxX + 16, boxY + 134);
+  ctx.fillText("พื้นที่สะสม:", boxX + 16, boxY + 134);
 
   ctx.fillStyle = theme.brandDark;
   ctx.font = `800 16px ${FONT_STACK}`;
-  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}%)`, boxX + 138, boxY + 134);
+  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}%)`, boxX + 104, boxY + 134);
 }
 
 function drawExportList(ctx, visited, theme) {
