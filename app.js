@@ -87,9 +87,10 @@ const state = {
   features: [],
   mapViewBox: { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT },
   pan: null,
+  pointers: new Map(),
+  pinch: null,
   suppressNextClick: false,
-  listMode: "visited",
-  recommendedProvince: null,
+  listMode: "unvisited",
   visited: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")),
   search: ""
 };
@@ -106,9 +107,6 @@ const resetButton = document.querySelector("#resetButton");
 const shareButton = document.querySelector("#shareButton");
 const showVisitedButton = document.querySelector("#showVisitedButton");
 const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
-const nextProvinceName = document.querySelector("#nextProvinceName");
-const unvisitedSummary = document.querySelector("#unvisitedSummary");
-const shuffleProvinceButton = document.querySelector("#shuffleProvinceButton");
 const zoomInButton = document.querySelector("#zoomInButton");
 const zoomOutButton = document.querySelector("#zoomOutButton");
 const zoomResetButton = document.querySelector("#zoomResetButton");
@@ -236,7 +234,6 @@ function updateSummary() {
   visitedCount.textContent = count;
   progressPercent.textContent = percent + "%";
   progressBar.style.width = percent + "%";
-  updateTravelSuggestion();
 }
 
 function updateListModeControls() {
@@ -251,38 +248,6 @@ function setListMode(mode) {
   state.listMode = mode;
   updateListModeControls();
   renderList();
-}
-
-function getUnvisitedFeatures() {
-  return state.features.filter((feature) => !state.visited.has(feature.properties.NAME_1));
-}
-
-function pickNextProvince() {
-  const unvisited = getUnvisitedFeatures();
-  state.recommendedProvince = unvisited.length ? unvisited[Math.floor(Math.random() * unvisited.length)].properties.NAME_1 : null;
-  updateTravelSuggestion();
-}
-
-function updateTravelSuggestion() {
-  if (!nextProvinceName) return;
-  const unvisited = getUnvisitedFeatures();
-  if (unvisitedSummary) {
-    unvisitedSummary.textContent = "ยังไม่ได้ไป " + unvisited.length + " จังหวัด";
-  }
-
-  if (!unvisited.length) {
-    state.recommendedProvince = null;
-    nextProvinceName.textContent = "ไปครบทุกจังหวัดแล้ว";
-    shuffleProvinceButton.disabled = true;
-    return;
-  }
-
-  if (!state.recommendedProvince || state.visited.has(state.recommendedProvince)) {
-    state.recommendedProvince = unvisited[0].properties.NAME_1;
-  }
-
-  nextProvinceName.textContent = getThaiNameByEnglish(state.recommendedProvince);
-  shuffleProvinceButton.disabled = false;
 }
 
 function showActiveProvince(province) {
@@ -415,63 +380,62 @@ function clamp(value, min, max) {
 }
 
 function startMapPan(event) {
-  if (event.button !== 0 || event.target.closest(".map-zoom-controls")) {
+  if (event.button !== 0) return;
+  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  const pointers = [...state.pointers.values()];
+  if (pointers.length === 2) {
+    state.pan = null;
+    state.pinch = { distance: getPointerDistance(pointers[0], pointers[1]), viewBox: { ...state.mapViewBox }, moved: false };
     return;
   }
-
-  state.pan = {
-    pointerId: event.pointerId,
-    startX: event.clientX,
-    startY: event.clientY,
-    startViewBox: { ...state.mapViewBox },
-    moved: false
-  };
-  }
+  if (pointers.length > 2) return;
+  state.pan = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startViewBox: { ...state.mapViewBox }, moved: false };
+}
 
 function moveMapPan(event) {
-  if (!state.pan || state.pan.pointerId !== event.pointerId) {
+  if (!state.pointers.has(event.pointerId)) return;
+  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  const pointers = [...state.pointers.values()];
+  if (state.pinch && pointers.length >= 2) {
+    const distance = getPointerDistance(pointers[0], pointers[1]);
+    if (Math.abs(distance - state.pinch.distance) > 3) {
+      state.pinch.moved = true;
+      state.suppressNextClick = true;
+      zoomMapFromViewBox(state.pinch.distance / distance, state.pinch.viewBox);
+    }
     return;
   }
-
+  if (!state.pan || state.pan.pointerId !== event.pointerId) return;
   const bounds = map.getBoundingClientRect();
   const dx = event.clientX - state.pan.startX;
   const dy = event.clientY - state.pan.startY;
-
   if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
     state.pan.moved = true;
-    if (!map.hasPointerCapture(event.pointerId)) {
-      map.setPointerCapture(event.pointerId);
-    }
+    if (!map.hasPointerCapture(event.pointerId)) map.setPointerCapture(event.pointerId);
   }
-
-  if (!state.pan.moved) {
-    return;
-  }
-
+  if (!state.pan.moved) return;
   const start = state.pan.startViewBox;
-  state.mapViewBox = clampViewBox({
-    x: start.x - (dx / bounds.width) * start.width,
-    y: start.y - (dy / bounds.height) * start.height,
-    width: start.width,
-    height: start.height
-  });
+  state.mapViewBox = clampViewBox({ x: start.x - (dx / bounds.width) * start.width, y: start.y - (dy / bounds.height) * start.height, width: start.width, height: start.height });
   applyMapViewBox();
 }
 
 function endMapPan(event) {
-  if (!state.pan || state.pan.pointerId !== event.pointerId) {
-    return;
-  }
+  if (!state.pointers.has(event.pointerId)) return;
+  if ((state.pan?.pointerId === event.pointerId && state.pan.moved) || state.pinch?.moved) state.suppressNextClick = true;
+  if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+  state.pointers.delete(event.pointerId);
+  if (state.pointers.size < 2) state.pinch = null;
+  if (state.pan?.pointerId === event.pointerId) state.pan = null;
+}
 
-  if (state.pan.moved) {
-    state.suppressNextClick = true;
-  }
-
-  if (map.hasPointerCapture(event.pointerId)) {
-    map.releasePointerCapture(event.pointerId);
-  }
-
-  state.pan = null;
+function getPointerDistance(first, second) { return Math.hypot(first.x - second.x, first.y - second.y); }
+function zoomMapFromViewBox(factor, viewBox) {
+  const nextWidth = clamp(viewBox.width * factor, MAP_WIDTH / 4, MAP_WIDTH);
+  const nextHeight = clamp(viewBox.height * factor, MAP_HEIGHT / 4, MAP_HEIGHT);
+  const centerX = viewBox.x + viewBox.width / 2;
+  const centerY = viewBox.y + viewBox.height / 2;
+  state.mapViewBox = clampViewBox({ x: centerX - nextWidth / 2, y: centerY - nextHeight / 2, width: nextWidth, height: nextHeight });
+  applyMapViewBox();
 }
 async function exportShareImage() {
   if (!state.features.length || shareButton.disabled) {
@@ -484,7 +448,6 @@ async function exportShareImage() {
   try {
     await document.fonts?.ready;
     const blob = await createShareImage();
-    downloadBlob(blob, "thailand-visited.png");
 
     if (typeof File !== "undefined" && navigator.canShare && navigator.share) {
       const file = new File([blob], "thailand-visited.png", { type: "image/png" });
@@ -494,13 +457,16 @@ async function exportShareImage() {
           title: "Thailand Visited Map",
           text: getShareText()
         });
+        return;
       }
     }
+
+    downloadBlob(blob, "thailand-visited.png");
   } catch (error) {
     console.error(error);
   } finally {
     shareButton.disabled = false;
-    shareButton.textContent = "แชร์ภาพ";
+    shareButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>แชร์ภาพ</span>';
   }
 }
 
@@ -520,7 +486,7 @@ function createShareImage() {
   drawExportLegend(ctx);
   drawExportList(ctx, visited);
   drawExportUrl(ctx);
-
+  drawExportCredit(ctx);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -538,6 +504,14 @@ function drawExportUrl(ctx) {
   ctx.font = `600 18px ${FONT_STACK}`;
   ctx.textAlign = "center";
   ctx.fillText("lab.termtem.in.th/maps", 540, 1042);
+  ctx.textAlign = "start";
+}
+
+function drawExportCredit(ctx) {
+  ctx.fillStyle = "#9e9488";
+  ctx.font = `500 14px ${FONT_STACK}`;
+  ctx.textAlign = "left";
+  ctx.fillText("Map Vector: github.com/BorntoDev/Thailand-Map-Vector", 54, 1042);
   ctx.textAlign = "start";
 }
 function drawExportHeader(ctx, count, percent) {
@@ -698,7 +672,6 @@ function downloadBlob(blob, filename) {
 
 showVisitedButton.addEventListener("click", () => setListMode("visited"));
 showUnvisitedButton.addEventListener("click", () => setListMode("unvisited"));
-shuffleProvinceButton.addEventListener("click", pickNextProvince);
 
 search.addEventListener("input", (event) => {
   state.search = event.target.value;
@@ -706,6 +679,7 @@ search.addEventListener("input", (event) => {
 });
 
 resetButton.addEventListener("click", () => {
+  if (!state.visited.size) return;
   state.visited.clear();
   localStorage.removeItem(STORAGE_KEY);
   updateProvinceStyles();
@@ -713,6 +687,7 @@ resetButton.addEventListener("click", () => {
   updateSummary();
   activeProvince.textContent = "เลือกจังหวัดบนแผนที่";
   activeStatus.textContent = "กดที่จังหวัดเพื่อเปลี่ยนสถานะ";
+  showUndoToast();
 });
 
 shareButton.addEventListener("click", exportShareImage);
@@ -739,17 +714,3 @@ map.addEventListener("click", (event) => {
     state.suppressNextClick = false;
   }
 }, true);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
