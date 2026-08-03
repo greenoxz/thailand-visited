@@ -1,7 +1,77 @@
 const MAP_WIDTH = 720;
 const MAP_HEIGHT = 980;
 const STORAGE_KEY = "thailand-visited-provinces";
+const THEME_STORAGE_KEY = "thailand-visited-theme";
 const FONT_STACK = "'LINE Seed Sans TH', 'Segoe UI', Tahoma, sans-serif";
+const TOTAL_THAILAND_AREA = 513120;
+
+const MAP_THEMES = {
+  sunset: {
+    name: "Warm Sunset",
+    brand: "#e95f3d",
+    brandDark: "#b83f27",
+    bg: "#f6f2eb",
+    ink: "#26211d",
+    muted: "#756d64",
+    line: "#dacfc2",
+    paper: "#fffaf3",
+    visited: "#e95f3d",
+    unvisited: "#f1dcc9",
+    hover: "#3f8c7a"
+  },
+  emerald: {
+    name: "Forest Emerald",
+    brand: "#2d6a4f",
+    brandDark: "#1b4332",
+    bg: "#f0f7f4",
+    ink: "#1b2a26",
+    muted: "#5c756e",
+    line: "#c8dfd5",
+    paper: "#f7fcf9",
+    visited: "#2d6a4f",
+    unvisited: "#d8f3dc",
+    hover: "#d97706"
+  },
+  ocean: {
+    name: "Ocean Blue",
+    brand: "#1d3557",
+    brandDark: "#0f2139",
+    bg: "#f1faee",
+    ink: "#13253a",
+    muted: "#457b9d",
+    line: "#a8dadc",
+    paper: "#f8fdff",
+    visited: "#1d3557",
+    unvisited: "#cbdadb",
+    hover: "#e63946"
+  },
+  midnight: {
+    name: "Midnight Dark",
+    brand: "#ff6b6b",
+    brandDark: "#e05656",
+    bg: "#181b20",
+    ink: "#f1f3f5",
+    muted: "#909296",
+    line: "#2c3038",
+    paper: "#21252b",
+    visited: "#ff6b6b",
+    unvisited: "#343a40",
+    hover: "#4ecdc4"
+  },
+  sakura: {
+    name: "Sakura Pink",
+    brand: "#e63946",
+    brandDark: "#b82431",
+    bg: "#fff5f5",
+    ink: "#331a1e",
+    muted: "#9e6b73",
+    line: "#f7cad0",
+    paper: "#fffafb",
+    visited: "#e63946",
+    unvisited: "#ffccd5",
+    hover: "#457b9d"
+  }
+};
 
 const provinceNames = {
   "Amnat Charoen": "อำนาจเจริญ",
@@ -83,6 +153,29 @@ const provinceNames = {
   Yasothon: "ยโสธร"
 };
 
+const provinceAreas = {
+  "Amnat Charoen": 3161, "Ang Thong": 968, "Bangkok Metropolis": 1569, "Bueng Kan": 4305,
+  "Buri Ram": 10323, "Chachoengsao": 5351, "Chai Nat": 2470, "Chaiyaphum": 12778,
+  "Chanthaburi": 6338, "Chiang Mai": 20107, "Chiang Rai": 11678, "Chon Buri": 4363,
+  "Chumphon": 6009, "Kalasin": 6947, "Kamphaeng Phet": 8607, "Kanchanaburi": 19483,
+  "Khon Kaen": 10886, "Krabi": 4709, "Lampang": 12534, "Lamphun": 4506,
+  "Loei": 11425, "Lop Buri": 6200, "Mae Hong Son": 12681, "Maha Sarakham": 5291,
+  "Mukdahan": 4340, "Nakhon Nayok": 2122, "Nakhon Pathom": 2168, "Nakhon Phanom": 5512,
+  "Nakhon Ratchasima": 20494, "Nakhon Sawan": 9598, "Nakhon Si Thammarat": 9943,
+  "Nan": 11472, "Narathiwat": 4475, "Nong Bua Lam Phu": 3859, "Nong Khai": 3027,
+  "Nonthaburi": 622, "Pathum Thani": 1526, "Pattani": 1940, "Phangnga": 4171,
+  "Phatthalung": 3424, "Phayao": 6335, "Phetchabun": 12668, "Phetchaburi": 6225,
+  "Phichit": 4531, "Phitsanulok": 10816, "Phra Nakhon Si Ayutthaya": 2557, "Phrae": 6539,
+  "Phuket": 543, "Prachin Buri": 4762, "Prachuap Khiri Khan": 6368, "Ranong": 3298,
+  "Ratchaburi": 5196, "Rayong": 3552, "Roi Et": 8299, "Sa Kaeo": 7195,
+  "Sakon Nakhon": 9606, "Samut Prakan": 1004, "Samut Sakhon": 872, "Samut Songkhram": 417,
+  "Saraburi": 3576, "Satun": 2479, "Si Sa Ket": 8840, "Sing Buri": 822,
+  "Songkhla": 7394, "Sukhothai": 6596, "Suphan Buri": 5358, "Surat Thani": 12891,
+  "Surin": 8124, "Tak": 16407, "Trang": 4918, "Trat": 2819,
+  "Ubon Ratchathani": 16107, "Udon Thani": 11730, "Uthai Thani": 6730, "Uttaradit": 7839,
+  "Yala": 4521, "Yasothon": 4162
+};
+
 const state = {
   features: [],
   mapViewBox: { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT },
@@ -92,6 +185,7 @@ const state = {
   suppressNextClick: false,
   listMode: "unvisited",
   visited: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")),
+  currentTheme: localStorage.getItem(THEME_STORAGE_KEY) || "sunset",
   search: ""
 };
 
@@ -110,24 +204,128 @@ const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
 const zoomInButton = document.querySelector("#zoomInButton");
 const zoomOutButton = document.querySelector("#zoomOutButton");
 const zoomResetButton = document.querySelector("#zoomResetButton");
+const themeButtons = document.querySelectorAll(".theme-btn");
 
 init();
 
 async function init() {
   try {
+    applyTheme(state.currentTheme);
     const response = await fetch("/data/thailand.json");
     const geojson = await response.json();
+
     state.features = geojson.features.sort((a, b) => {
       return getThaiName(a).localeCompare(getThaiName(b), "th");
     });
+
+    state.features.forEach((feature) => {
+      let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+      walkCoordinates(feature.geometry.coordinates, ([lng, lat]) => {
+        minLng = Math.min(minLng, lng);
+        maxLng = Math.max(maxLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+      });
+      feature.bounds = { minLng, maxLng, minLat, maxLat };
+    });
+
     renderMap();
     applyMapViewBox();
     renderList();
     updateSummary();
+    updateInsights();
   } catch (error) {
     map.innerHTML = `<text x="32" y="64">โหลดแผนที่ไม่สำเร็จ</text>`;
     console.error(error);
   }
+}
+
+function applyTheme(themeKey) {
+  const theme = MAP_THEMES[themeKey] || MAP_THEMES.sunset;
+  state.currentTheme = themeKey;
+  localStorage.setItem(THEME_STORAGE_KEY, themeKey);
+
+  const root = document.documentElement;
+  root.style.setProperty("--brand", theme.brand);
+  root.style.setProperty("--brand-dark", theme.brandDark);
+  root.style.setProperty("--bg", theme.bg);
+  root.style.setProperty("--ink", theme.ink);
+  root.style.setProperty("--muted", theme.muted);
+  root.style.setProperty("--line", theme.line);
+  root.style.setProperty("--paper", theme.paper);
+  root.style.setProperty("--visited", theme.visited);
+  root.style.setProperty("--unvisited", theme.unvisited);
+  root.style.setProperty("--hover", theme.hover);
+
+  themeButtons.forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.theme === themeKey);
+  });
+}
+
+themeButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    applyTheme(btn.dataset.theme);
+  });
+});
+
+function getVisitedFeatures() {
+  return state.features.filter((feature) => state.visited.has(feature.properties.NAME_1));
+}
+
+function getTravelInsights() {
+  const visitedFeatures = getVisitedFeatures();
+  if (!visitedFeatures.length) {
+    return {
+      north: "-",
+      south: "-",
+      east: "-",
+      west: "-",
+      totalArea: 0,
+      areaPercent: 0
+    };
+  }
+
+  let north = visitedFeatures[0];
+  let south = visitedFeatures[0];
+  let east = visitedFeatures[0];
+  let west = visitedFeatures[0];
+  let totalArea = 0;
+
+  visitedFeatures.forEach((feature) => {
+    const name = feature.properties.NAME_1;
+    totalArea += provinceAreas[name] || 0;
+
+    if (feature.bounds.maxLat > north.bounds.maxLat) north = feature;
+    if (feature.bounds.minLat < south.bounds.minLat) south = feature;
+    if (feature.bounds.maxLng > east.bounds.maxLng) east = feature;
+    if (feature.bounds.minLng < west.bounds.minLng) west = feature;
+  });
+
+  const areaPercent = Math.round((totalArea / TOTAL_THAILAND_AREA) * 1000) / 10;
+
+  return {
+    north: getThaiName(north),
+    south: getThaiName(south),
+    east: getThaiName(east),
+    west: getThaiName(west),
+    totalArea: totalArea.toLocaleString("th-TH"),
+    areaPercent
+  };
+}
+
+function updateInsights() {
+  const insights = getTravelInsights();
+  const insightNorth = document.querySelector("#insightNorth");
+  const insightSouth = document.querySelector("#insightSouth");
+  const insightEast = document.querySelector("#insightEast");
+  const insightWest = document.querySelector("#insightWest");
+  const insightArea = document.querySelector("#insightArea");
+
+  if (insightNorth) insightNorth.textContent = insights.north;
+  if (insightSouth) insightSouth.textContent = insights.south;
+  if (insightEast) insightEast.textContent = insights.east;
+  if (insightWest) insightWest.textContent = insights.west;
+  if (insightArea) insightArea.textContent = `${insights.totalArea} กม.² (${insights.areaPercent}%)`;
 }
 
 function renderMap() {
@@ -218,6 +416,7 @@ function toggleProvince(province) {
   updateProvinceStyles();
   renderList();
   updateSummary();
+  updateInsights();
   showActiveProvince(province);
 }
 
@@ -338,7 +537,6 @@ function walkCoordinates(coordinates, callback) {
   coordinates.forEach((child) => walkCoordinates(child, callback));
 }
 
-
 function applyMapViewBox() {
   const { x, y, width, height } = state.mapViewBox;
   map.setAttribute("viewBox", `${x.toFixed(2)} ${y.toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)}`);
@@ -379,74 +577,10 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function startMapPan(event) {
-  if (event.button !== 0) return;
-  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  const pointers = [...state.pointers.values()];
-  if (pointers.length === 2) {
-    state.pan = null;
-    state.pinch = { distance: getPointerDistance(pointers[0], pointers[1]), viewBox: { ...state.mapViewBox }, moved: false };
-    return;
-  }
-  if (pointers.length > 2) return;
-  state.pan = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startViewBox: { ...state.mapViewBox }, moved: false };
-}
-
-function moveMapPan(event) {
-  if (!state.pointers.has(event.pointerId)) return;
-  state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  const pointers = [...state.pointers.values()];
-  if (state.pinch && pointers.length >= 2) {
-    const distance = getPointerDistance(pointers[0], pointers[1]);
-    if (Math.abs(distance - state.pinch.distance) > 3) {
-      state.pinch.moved = true;
-      state.suppressNextClick = true;
-      zoomMapFromViewBox(state.pinch.distance / distance, state.pinch.viewBox);
-    }
-    return;
-  }
-  if (!state.pan || state.pan.pointerId !== event.pointerId) return;
-  const bounds = map.getBoundingClientRect();
-  const dx = event.clientX - state.pan.startX;
-  const dy = event.clientY - state.pan.startY;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-    state.pan.moved = true;
-    if (!map.hasPointerCapture(event.pointerId)) map.setPointerCapture(event.pointerId);
-  }
-  if (!state.pan.moved) return;
-  const start = state.pan.startViewBox;
-  state.mapViewBox = clampViewBox({ x: start.x - (dx / bounds.width) * start.width, y: start.y - (dy / bounds.height) * start.height, width: start.width, height: start.height });
-  applyMapViewBox();
-}
-
-function endMapPan(event) {
-  if (!state.pointers.has(event.pointerId)) return;
-  if ((state.pan?.pointerId === event.pointerId && state.pan.moved) || state.pinch?.moved) state.suppressNextClick = true;
-  if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
-  state.pointers.delete(event.pointerId);
-  if (state.pointers.size < 2) state.pinch = null;
-  if (state.pan?.pointerId === event.pointerId) state.pan = null;
-}
-
-function getPointerDistance(first, second) { return Math.hypot(first.x - second.x, first.y - second.y); }
-function zoomMapFromViewBox(factor, viewBox) {
-  const nextWidth = clamp(viewBox.width * factor, MAP_WIDTH / 4, MAP_WIDTH);
-  const nextHeight = clamp(viewBox.height * factor, MAP_HEIGHT / 4, MAP_HEIGHT);
-  const centerX = viewBox.x + viewBox.width / 2;
-  const centerY = viewBox.y + viewBox.height / 2;
-  state.mapViewBox = clampViewBox({ x: centerX - nextWidth / 2, y: centerY - nextHeight / 2, width: nextWidth, height: nextHeight });
-  applyMapViewBox();
-}
 async function exportShareImage() {
-  if (!state.features.length || shareButton.disabled) {
-    return;
-  }
-
-  shareButton.disabled = true;
-  shareButton.textContent = "กำลังสร้าง...";
-
   try {
-    await document.fonts?.ready;
+    shareButton.disabled = true;
+    shareButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>กำลังสร้างภาพ...</span>';
     const blob = await createShareImage();
 
     if (typeof File !== "undefined" && navigator.canShare && navigator.share) {
@@ -478,15 +612,18 @@ function createShareImage() {
   const ctx = canvas.getContext("2d");
   const visited = getVisitedFeatures();
   const percent = Math.round((visited.length / 77) * 100);
+  const theme = MAP_THEMES[state.currentTheme] || MAP_THEMES.sunset;
 
-  ctx.fillStyle = "#f6f2eb";
+  ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, size, size);
-  drawExportHeader(ctx, visited.length, percent);
-  drawExportMap(ctx);
-  drawExportLegend(ctx);
-  drawExportList(ctx, visited);
-  drawExportUrl(ctx);
-  drawExportCredit(ctx);
+
+  drawExportHeader(ctx, visited.length, percent, theme);
+  drawExportMap(ctx, theme);
+  drawExportLegend(ctx, theme);
+  drawExportInsights(ctx, theme);
+  drawExportList(ctx, visited, theme);
+  drawExportUrl(ctx, theme);
+  drawExportCredit(ctx, theme);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -499,39 +636,40 @@ function createShareImage() {
   });
 }
 
-function drawExportUrl(ctx) {
-  ctx.fillStyle = "#8a8177";
+function drawExportUrl(ctx, theme) {
+  ctx.fillStyle = theme.muted;
   ctx.font = `600 18px ${FONT_STACK}`;
   ctx.textAlign = "center";
   ctx.fillText("lab.termtem.in.th/maps", 540, 1042);
   ctx.textAlign = "start";
 }
 
-function drawExportCredit(ctx) {
-  ctx.fillStyle = "#9e9488";
+function drawExportCredit(ctx, theme) {
+  ctx.fillStyle = theme.muted;
   ctx.font = `500 14px ${FONT_STACK}`;
   ctx.textAlign = "left";
   ctx.fillText("Map Vector: github.com/BorntoDev/Thailand-Map-Vector", 54, 1042);
   ctx.textAlign = "start";
 }
-function drawExportHeader(ctx, count, percent) {
-  ctx.fillStyle = "#b83f27";
+
+function drawExportHeader(ctx, count, percent, theme) {
+  ctx.fillStyle = theme.brandDark;
   ctx.font = `700 28px ${FONT_STACK}`;
-  ctx.fillText("Thailand Visited", 64, 76);
+  ctx.fillText("Thailand Visited", 64, 72);
 
-  ctx.fillStyle = "#26211d";
-  ctx.font = `800 58px ${FONT_STACK}`;
-  ctx.fillText(`ไปมาแล้ว ${count} จังหวัด`, 64, 142);
+  ctx.fillStyle = theme.ink;
+  ctx.font = `800 54px ${FONT_STACK}`;
+  ctx.fillText(`ไปมาแล้ว ${count} จังหวัด`, 64, 134);
 
-  ctx.fillStyle = "#756d64";
-  ctx.font = `700 26px ${FONT_STACK}`;
-  ctx.fillText(`คิดเป็น ${percent}% จาก 77 จังหวัด`, 64, 184);
+  ctx.fillStyle = theme.muted;
+  ctx.font = `700 24px ${FONT_STACK}`;
+  ctx.fillText(`คิดเป็น ${percent}% จาก 77 จังหวัด`, 64, 174);
 }
 
-function drawExportMap(ctx) {
+function drawExportMap(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 54, y: 204, width: 430, height: 776 };
+  const mapBox = { x: 54, y: 194, width: 420, height: 600 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -543,8 +681,8 @@ function drawExportMap(ctx) {
   state.features.forEach((feature) => {
     const province = feature.properties.NAME_1;
     const path = new Path2D(geometryToPath(feature.geometry, project));
-    ctx.fillStyle = state.visited.has(province) ? "#e95f3d" : "#f1dcc9";
-    ctx.strokeStyle = "#fffaf3";
+    ctx.fillStyle = state.visited.has(province) ? theme.visited : theme.unvisited;
+    ctx.strokeStyle = theme.paper;
     ctx.lineWidth = 1.7;
     ctx.fill(path);
     ctx.stroke(path);
@@ -553,49 +691,96 @@ function drawExportMap(ctx) {
   ctx.restore();
 }
 
-
-function drawExportLegend(ctx) {
-  const x = 104;
-  const y = 966;
-  ctx.font = `800 22px ${FONT_STACK}`;
-  drawLegendItem(ctx, x, y, "#e95f3d", "ไปมาแล้ว");
-  drawLegendItem(ctx, x + 170, y, "#f1dcc9", "ยังไม่ไป");
+function drawExportLegend(ctx, theme) {
+  const x = 74;
+  const y = 812;
+  ctx.font = `800 20px ${FONT_STACK}`;
+  drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
+  drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
 }
 
-function drawLegendItem(ctx, x, y, color, label) {
+function drawLegendItem(ctx, x, y, color, label, theme) {
   ctx.fillStyle = color;
   roundRect(ctx, x, y - 18, 22, 22, 5);
   ctx.fill();
-  ctx.strokeStyle = "#fffaf3";
+  ctx.strokeStyle = theme.paper;
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = "#26211d";
+  ctx.fillStyle = theme.ink;
   ctx.fillText(label, x + 32, y);
 }
-function drawExportList(ctx, visited) {
+
+function drawExportInsights(ctx, theme) {
+  const insights = getTravelInsights();
+  const boxX = 54;
+  const boxY = 832;
+  const boxW = 420;
+  const boxH = 154;
+
+  ctx.fillStyle = theme.paper;
+  roundRect(ctx, boxX, boxY, boxW, boxH, 14);
+  ctx.fill();
+  ctx.strokeStyle = theme.line;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.fillStyle = theme.brandDark;
+  ctx.font = `800 19px ${FONT_STACK}`;
+  ctx.fillText("สถิติเชิงลึก (Insights)", boxX + 16, boxY + 30);
+
+  ctx.font = `600 15px ${FONT_STACK}`;
+  ctx.fillStyle = theme.muted;
+  ctx.fillText("🌲 เหนือสุด:", boxX + 16, boxY + 62);
+  ctx.fillText("🏖️ ใต้สุด:", boxX + 224, boxY + 62);
+  ctx.fillText("🌅 ตะวันออกสุด:", boxX + 16, boxY + 90);
+  ctx.fillText("⛰️ ตะวันตกสุด:", boxX + 224, boxY + 90);
+
+  ctx.fillStyle = theme.ink;
+  ctx.font = `700 15px ${FONT_STACK}`;
+  ctx.fillText(insights.north, boxX + 110, boxY + 62);
+  ctx.fillText(insights.south, boxX + 300, boxY + 62);
+  ctx.fillText(insights.east, boxX + 138, boxY + 90);
+  ctx.fillText(insights.west, boxX + 330, boxY + 90);
+
+  ctx.strokeStyle = theme.line;
+  ctx.beginPath();
+  ctx.moveTo(boxX + 16, boxY + 106);
+  ctx.lineTo(boxX + boxW - 16, boxY + 106);
+  ctx.stroke();
+
+  ctx.fillStyle = theme.muted;
+  ctx.font = `600 15px ${FONT_STACK}`;
+  ctx.fillText("🗺️ พื้นที่สะสม:", boxX + 16, boxY + 134);
+
+  ctx.fillStyle = theme.brandDark;
+  ctx.font = `800 16px ${FONT_STACK}`;
+  ctx.fillText(`${insights.totalArea} กม.² (${insights.areaPercent}%)`, boxX + 138, boxY + 134);
+}
+
+function drawExportList(ctx, visited, theme) {
   const cardX = 496;
-  const cardY = 214;
-  const cardWidth = 496;
-  const cardHeight = 774;
+  const cardY = 194;
+  const cardWidth = 530;
+  const cardHeight = 792;
   const x = cardX + 28;
-  const y = cardY + 58;
+  const y = cardY + 54;
   const width = cardWidth - 56;
   const names = visited.map(getThaiName);
 
-  ctx.fillStyle = "#fffaf3";
+  ctx.fillStyle = theme.paper;
   roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 22);
   ctx.fill();
-  ctx.strokeStyle = "#dacfc2";
+  ctx.strokeStyle = theme.line;
   ctx.lineWidth = 1.4;
   ctx.stroke();
 
-  ctx.fillStyle = "#26211d";
+  ctx.fillStyle = theme.ink;
   ctx.font = `800 32px ${FONT_STACK}`;
   ctx.fillText("รายชื่อจังหวัด", x, y);
 
   if (!names.length) {
-    ctx.fillStyle = "#756d64";
+    ctx.fillStyle = theme.muted;
     ctx.font = `700 24px ${FONT_STACK}`;
     ctx.fillText("ยังไม่ได้เลือกจังหวัด", x, y + 48);
     return;
@@ -615,12 +800,13 @@ function drawExportList(ctx, visited) {
     const row = index % rows;
     const textX = x + column * columnWidth;
     const textY = y + 52 + row * lineHeight;
-    ctx.fillStyle = "#e95f3d";
+    ctx.fillStyle = theme.visited;
     ctx.fillText("•", textX, textY);
-    ctx.fillStyle = "#26211d";
+    ctx.fillStyle = theme.ink;
     fitText(ctx, name, textX + 16, textY, columnWidth - 24);
   });
 }
+
 function fitText(ctx, text, x, y, maxWidth) {
   const originalFont = ctx.font;
   const sizeMatch = originalFont.match(/(\d+(?:\.\d+)?)px/);
@@ -644,10 +830,6 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x, y + height, x, y, radius);
   ctx.arcTo(x, y, x + width, y, radius);
   ctx.closePath();
-}
-
-function getVisitedFeatures() {
-  return state.features.filter((feature) => state.visited.has(feature.properties.NAME_1));
 }
 
 function getShareText() {
@@ -685,19 +867,12 @@ resetButton.addEventListener("click", () => {
   updateProvinceStyles();
   renderList();
   updateSummary();
+  updateInsights();
   activeProvince.textContent = "เลือกจังหวัดบนแผนที่";
   activeStatus.textContent = "กดที่จังหวัดเพื่อเปลี่ยนสถานะ";
-  showUndoToast();
 });
 
 shareButton.addEventListener("click", exportShareImage);
-
-
-
-
-
-
-
 
 zoomInButton.addEventListener("click", () => zoomMap(0.78));
 zoomOutButton.addEventListener("click", () => zoomMap(1.28));

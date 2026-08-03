@@ -190,9 +190,97 @@ h1 {
   opacity: 0.72;
 }
 
-#resetButton:hover {
-  border-color: var(--brand);
-  background: #ffe6db;
+.theme-selector {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.theme-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.theme-btn:hover {
+  transform: scale(1.15);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-btn.is-active {
+  background: rgba(0, 0, 0, 0.08);
+  outline: 2px solid var(--brand);
+}
+
+.insights-card {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  display: grid;
+  gap: 8px;
+}
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+
+.insight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.insight-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.insight-item strong {
+  color: var(--ink);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insight-area-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+}
+
+.insight-area-box strong {
+  color: var(--brand-dark);
+  font-size: 12.5px;
 }
 
 

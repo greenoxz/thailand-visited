@@ -25,6 +25,13 @@
               <span id="activeStatus">กดที่จังหวัดเพื่อเปลี่ยนสถานะ</span>
             </div>
             <div class="toolbar-actions">
+              <div class="theme-selector" id="themeSelector" aria-label="เลือกธีมสี">
+                <button class="theme-btn is-active" type="button" data-theme="sunset" title="Warm Sunset">🌅</button>
+                <button class="theme-btn" type="button" data-theme="emerald" title="Forest Emerald">🌿</button>
+                <button class="theme-btn" type="button" data-theme="ocean" title="Ocean Blue">🌊</button>
+                <button class="theme-btn" type="button" data-theme="midnight" title="Midnight Dark">🌙</button>
+                <button class="theme-btn" type="button" data-theme="sakura" title="Sakura Pink">🌸</button>
+              </div>
               <button id="shareButton" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>แชร์ภาพ</span></button>
               <button id="resetButton" type="button" aria-label="ล้างทั้งหมด" title="ล้างทั้งหมด"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span class="sr-only">ล้างทั้งหมด</span></button>
             </div>
@@ -56,6 +63,36 @@
             <div class="summary-stat"><span id="visitedCount">0</span><span>/77</span></div>
             <span class="summary-label">จังหวัดที่ไปมาแล้ว</span>
           </div>
+
+          <div class="insights-card" id="insightsCard">
+            <div class="insights-header">
+              <i class="fa-solid fa-compass" aria-hidden="true"></i>
+              <span>สถิติเชิงลึก (Travel Insights)</span>
+            </div>
+            <div class="insights-grid">
+              <div class="insight-item">
+                <span class="insight-label">🌲 เหนือสุด</span>
+                <strong id="insightNorth">-</strong>
+              </div>
+              <div class="insight-item">
+                <span class="insight-label">🏖️ ใต้สุด</span>
+                <strong id="insightSouth">-</strong>
+              </div>
+              <div class="insight-item">
+                <span class="insight-label">🌅 ตะวันออกสุด</span>
+                <strong id="insightEast">-</strong>
+              </div>
+              <div class="insight-item">
+                <span class="insight-label">⛰️ ตะวันตกสุด</span>
+                <strong id="insightWest">-</strong>
+              </div>
+            </div>
+            <div class="insight-area-box">
+              <span class="insight-label">🗺️ พื้นที่สะสม</span>
+              <strong id="insightArea">0 กม.² (0%)</strong>
+            </div>
+          </div>
+
           <label class="search-box">
             <span>ค้นหาจังหวัด</span>
             <input id="provinceSearch" type="search" placeholder="เช่น เชียงใหม่, Bangkok" />
