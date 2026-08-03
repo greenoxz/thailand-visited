@@ -1,7 +1,7 @@
 const MAP_WIDTH = 720;
 const MAP_HEIGHT = 980;
 const STORAGE_KEY = "thailand-visited-provinces";
-const THEME_STORAGE_KEY = "thailand-visited-theme";
+const EXPORT_THEME_STORAGE_KEY = "thailand-visited-export-theme";
 const FONT_STACK = "'LINE Seed Sans TH', 'Segoe UI', Tahoma, sans-serif";
 const TOTAL_THAILAND_AREA = 513120;
 
@@ -185,7 +185,7 @@ const state = {
   suppressNextClick: false,
   listMode: "unvisited",
   visited: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")),
-  currentTheme: localStorage.getItem(THEME_STORAGE_KEY) || "sunset",
+  exportTheme: localStorage.getItem(EXPORT_THEME_STORAGE_KEY) || "sunset",
   search: ""
 };
 
@@ -204,13 +204,16 @@ const showUnvisitedButton = document.querySelector("#showUnvisitedButton");
 const zoomInButton = document.querySelector("#zoomInButton");
 const zoomOutButton = document.querySelector("#zoomOutButton");
 const zoomResetButton = document.querySelector("#zoomResetButton");
-const themeButtons = document.querySelectorAll(".theme-btn");
+
+const shareModal = document.querySelector("#shareModal");
+const closeShareModal = document.querySelector("#closeShareModal");
+const confirmShareButton = document.querySelector("#confirmShareButton");
+const exportThemeCards = document.querySelectorAll(".export-theme-card");
 
 init();
 
 async function init() {
   try {
-    applyTheme(state.currentTheme);
     const response = await fetch("/data/thailand.json");
     const geojson = await response.json();
 
@@ -240,32 +243,36 @@ async function init() {
   }
 }
 
-function applyTheme(themeKey) {
-  const theme = MAP_THEMES[themeKey] || MAP_THEMES.sunset;
-  state.currentTheme = themeKey;
-  localStorage.setItem(THEME_STORAGE_KEY, themeKey);
-
-  const root = document.documentElement;
-  root.style.setProperty("--brand", theme.brand);
-  root.style.setProperty("--brand-dark", theme.brandDark);
-  root.style.setProperty("--bg", theme.bg);
-  root.style.setProperty("--ink", theme.ink);
-  root.style.setProperty("--muted", theme.muted);
-  root.style.setProperty("--line", theme.line);
-  root.style.setProperty("--paper", theme.paper);
-  root.style.setProperty("--visited", theme.visited);
-  root.style.setProperty("--unvisited", theme.unvisited);
-  root.style.setProperty("--hover", theme.hover);
-
-  themeButtons.forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.theme === themeKey);
+function updateExportThemeSelection(themeKey) {
+  state.exportTheme = themeKey;
+  localStorage.setItem(EXPORT_THEME_STORAGE_KEY, themeKey);
+  exportThemeCards.forEach((card) => {
+    card.classList.toggle("is-active", card.dataset.theme === themeKey);
   });
 }
 
-themeButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    applyTheme(btn.dataset.theme);
+function openShareModal() {
+  updateExportThemeSelection(state.exportTheme);
+  shareModal.classList.add("is-open");
+  shareModal.setAttribute("aria-hidden", "false");
+}
+
+function closeShareModalFunc() {
+  shareModal.classList.remove("is-open");
+  shareModal.setAttribute("aria-hidden", "true");
+}
+
+exportThemeCards.forEach((card) => {
+  card.addEventListener("click", () => {
+    updateExportThemeSelection(card.dataset.theme);
   });
+});
+
+closeShareModal.addEventListener("click", closeShareModalFunc);
+shareModal.addEventListener("click", (event) => {
+  if (event.target === shareModal) {
+    closeShareModalFunc();
+  }
 });
 
 function getVisitedFeatures() {
@@ -577,10 +584,10 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-async function exportShareImage() {
+async function handleConfirmShare() {
   try {
-    shareButton.disabled = true;
-    shareButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>กำลังสร้างภาพ...</span>';
+    confirmShareButton.disabled = true;
+    confirmShareButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>กำลังสร้างภาพ...</span>';
     const blob = await createShareImage();
 
     if (typeof File !== "undefined" && navigator.canShare && navigator.share) {
@@ -591,16 +598,18 @@ async function exportShareImage() {
           title: "Thailand Visited Map",
           text: getShareText()
         });
+        closeShareModalFunc();
         return;
       }
     }
 
     downloadBlob(blob, "thailand-visited.png");
+    closeShareModalFunc();
   } catch (error) {
     console.error(error);
   } finally {
-    shareButton.disabled = false;
-    shareButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>แชร์ภาพ</span>';
+    confirmShareButton.disabled = false;
+    confirmShareButton.innerHTML = '<i class="fa-solid fa-download"></i><span>ดาวน์โหลด / แชร์ภาพ</span>';
   }
 }
 
@@ -612,7 +621,7 @@ function createShareImage() {
   const ctx = canvas.getContext("2d");
   const visited = getVisitedFeatures();
   const percent = Math.round((visited.length / 77) * 100);
-  const theme = MAP_THEMES[state.currentTheme] || MAP_THEMES.sunset;
+  const theme = MAP_THEMES[state.exportTheme] || MAP_THEMES.sunset;
 
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, size, size);
@@ -872,7 +881,8 @@ resetButton.addEventListener("click", () => {
   activeStatus.textContent = "กดที่จังหวัดเพื่อเปลี่ยนสถานะ";
 });
 
-shareButton.addEventListener("click", exportShareImage);
+shareButton.addEventListener("click", openShareModal);
+confirmShareButton.addEventListener("click", handleConfirmShare);
 
 zoomInButton.addEventListener("click", () => zoomMap(0.78));
 zoomOutButton.addEventListener("click", () => zoomMap(1.28));

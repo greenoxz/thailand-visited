@@ -25,13 +25,6 @@
               <span id="activeStatus">กดที่จังหวัดเพื่อเปลี่ยนสถานะ</span>
             </div>
             <div class="toolbar-actions">
-              <div class="theme-selector" id="themeSelector" aria-label="เลือกธีมสี">
-                <button class="theme-btn is-active" type="button" data-theme="sunset" title="Warm Sunset" aria-label="Warm Sunset"><i class="fa-solid fa-sun" aria-hidden="true"></i></button>
-                <button class="theme-btn" type="button" data-theme="emerald" title="Forest Emerald" aria-label="Forest Emerald"><i class="fa-solid fa-tree" aria-hidden="true"></i></button>
-                <button class="theme-btn" type="button" data-theme="ocean" title="Ocean Blue" aria-label="Ocean Blue"><i class="fa-solid fa-water" aria-hidden="true"></i></button>
-                <button class="theme-btn" type="button" data-theme="midnight" title="Midnight Dark" aria-label="Midnight Dark"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
-                <button class="theme-btn" type="button" data-theme="sakura" title="Sakura Pink" aria-label="Sakura Pink"><i class="fa-solid fa-spa" aria-hidden="true"></i></button>
-              </div>
               <button id="shareButton" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>แชร์ภาพ</span></button>
               <button id="resetButton" type="button" aria-label="ล้างทั้งหมด" title="ล้างทั้งหมด"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span class="sr-only">ล้างทั้งหมด</span></button>
             </div>
@@ -118,6 +111,48 @@
         <a class="footer-brand" href="https://termtem.in.th/" target="_blank" rel="noopener noreferrer">termtem.in.th</a>
       </footer>
     </main>
+
+    <div id="shareModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-labelledby="shareModalTitle">
+        <div class="modal-header">
+          <h2 id="shareModalTitle"><i class="fa-solid fa-palette"></i> เลือกธีมสำหรับแชร์ภาพ</h2>
+          <button id="closeShareModal" class="modal-close-btn" type="button" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-subtitle">เลือกโทนสีสำหรับการ์ดรูปภาพสรุปการเดินทางของคุณ</p>
+
+          <div class="export-theme-grid" id="exportThemeGrid">
+            <button class="export-theme-card is-active" type="button" data-theme="sunset">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #e95f3d 50%, #f1dcc9 50%);"></span>
+              <span class="theme-name">Warm Sunset</span>
+            </button>
+            <button class="export-theme-card" type="button" data-theme="emerald">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #2d6a4f 50%, #d8f3dc 50%);"></span>
+              <span class="theme-name">Forest Emerald</span>
+            </button>
+            <button class="export-theme-card" type="button" data-theme="ocean">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #1d3557 50%, #a8dadc 50%);"></span>
+              <span class="theme-name">Ocean Blue</span>
+            </button>
+            <button class="export-theme-card" type="button" data-theme="midnight">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #ff6b6b 50%, #343a40 50%);"></span>
+              <span class="theme-name">Midnight Dark</span>
+            </button>
+            <button class="export-theme-card" type="button" data-theme="sakura">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #e63946 50%, #ffccd5 50%);"></span>
+              <span class="theme-name">Sakura Pink</span>
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="confirmShareButton" class="btn-confirm-share" type="button">
+            <i class="fa-solid fa-download"></i>
+            <span>ดาวน์โหลด / แชร์ภาพ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="/app.js"></script>
   </body>
 </html>
