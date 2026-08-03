@@ -630,7 +630,7 @@ function zoomMapToCenter(factor, initialViewBox) {
 }
 
 function startMapPan(event) {
-  if (event.button !== 0) return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
   state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   const pointers = [...state.pointers.values()];
   if (pointers.length === 2) {
@@ -657,12 +657,13 @@ function moveMapPan(event) {
   if (!state.pan || state.pan.pointerId !== event.pointerId) return;
   const deltaX = event.clientX - state.pan.startX;
   const deltaY = event.clientY - state.pan.startY;
-  if (Math.hypot(deltaX, deltaY) > 5) {
+  const threshold = event.pointerType === "touch" ? 10 : 5;
+  if (Math.hypot(deltaX, deltaY) > threshold) {
     state.pan.moved = true;
     state.suppressNextClick = true;
   }
-  const scaleX = state.mapViewBox.width / map.clientWidth;
-  const scaleY = state.mapViewBox.height / map.clientHeight;
+  const scaleX = state.mapViewBox.width / Math.max(map.clientWidth, 1);
+  const scaleY = state.mapViewBox.height / Math.max(map.clientHeight, 1);
   state.mapViewBox = clampViewBox({
     x: state.pan.startViewBox.x - deltaX * scaleX,
     y: state.pan.startViewBox.y - deltaY * scaleY,
