@@ -736,14 +736,12 @@ function createShareImage() {
     drawExportHeader916(ctx, visited.length, percent, theme);
     drawExportMap916(ctx, theme);
     drawExportLegend916(ctx, theme);
-    drawExportInsights916(ctx, theme);
     drawExportList916(ctx, visited, theme);
     drawExportFooter916(ctx, theme);
   } else {
     drawExportHeader(ctx, visited.length, percent, theme);
     drawExportMap(ctx, theme);
     drawExportLegend(ctx, theme);
-    drawExportInsights(ctx, theme);
     drawExportList(ctx, visited, theme);
     drawExportUrl(ctx, theme);
     drawExportCredit(ctx, theme);
@@ -847,7 +845,7 @@ function drawExportHeader(ctx, count, percent, theme) {
 function drawExportMap(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 30, y: 170, width: 495, height: 800 };
+  const mapBox = { x: 260, y: 170, width: 560, height: 800 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -888,7 +886,7 @@ function drawExportHeader916(ctx, count, percent, theme) {
 function drawExportMap916(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 40, y: 200, width: 1000, height: 980 };
+  const mapBox = { x: 40, y: 250, width: 1000, height: 1450 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -911,11 +909,11 @@ function drawExportMap916(ctx, theme) {
 }
 
 function drawExportLegend916(ctx, theme) {
-  const x = 74;
-  const y = 1195;
-  ctx.font = `800 20px ${FONT_STACK}`;
+  const x = 380;
+  const y = 1750;
+  ctx.font = `800 24px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
-  drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
+  drawLegendItem(ctx, x + 180, y, theme.unvisited, "ยังไม่ไป", theme);
 }
 
 function drawExportInsights916(ctx, theme) {
@@ -966,52 +964,50 @@ function drawExportInsights916(ctx, theme) {
 }
 
 function drawExportList916(ctx, visited, theme) {
-  const cardX = 54;
-  const cardY = 1400;
-  const cardWidth = 972;
-  const cardHeight = 440;
-  const x = cardX + 28;
-  const y = cardY + 48;
-  const width = cardWidth - 56;
   const names = visited.map(getThaiName);
+  if (!names.length) return;
 
-  ctx.fillStyle = theme.paper;
-  roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20);
-  ctx.fill();
-  ctx.strokeStyle = theme.line;
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
+  const zones = [
+    { x: 50, y: 350, w: 260, h: 450 }, // Top Left
+    { x: 770, y: 350, w: 260, h: 450 }, // Top Right
+    { x: 50, y: 900, w: 260, h: 800 }, // Bottom Left
+    { x: 770, y: 900, w: 260, h: 800 }, // Bottom Right
+  ];
 
-  ctx.fillStyle = theme.ink;
-  ctx.font = `800 28px ${FONT_STACK}`;
-  ctx.fillText("รายชื่อจังหวัดที่เคยไป", x, y);
+  let fontSize = 28;
+  let lineHeight = fontSize * 1.5;
+  let itemsPerZone = [];
 
-  if (!names.length) {
-    ctx.fillStyle = theme.muted;
-    ctx.font = `700 22px ${FONT_STACK}`;
-    ctx.fillText("ยังไม่ได้เลือกจังหวัด", x, y + 48);
-    return;
+  while (fontSize > 12) {
+    lineHeight = fontSize + 12;
+    itemsPerZone = zones.map(z => Math.floor(z.h / lineHeight));
+    const totalCapacity = itemsPerZone.reduce((a, b) => a + b, 0);
+    if (totalCapacity >= names.length) {
+      break;
+    }
+    fontSize -= 2;
   }
 
-  const columns = 4;
-  const rows = Math.ceil(names.length / columns);
-  const columnWidth = Math.floor(width / columns);
-  const lineHeight = 30;
+  ctx.fillStyle = theme.ink;
+  ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
 
-  ctx.font = `700 18px ${FONT_STACK}`;
-
-  names.forEach((name, index) => {
-    const col = Math.floor(index / rows);
-    const row = index % rows;
-    const textX = x + col * columnWidth;
-    const textY = y + 46 + row * lineHeight;
-    if (textY < cardY + cardHeight - 16) {
+  let nameIndex = 0;
+  for (let i = 0; i < zones.length; i++) {
+    const zone = zones[i];
+    const capacity = itemsPerZone[i];
+    for (let r = 0; r < capacity; r++) {
+      if (nameIndex >= names.length) break;
+      const name = names[nameIndex];
+      const textX = zone.x;
+      const textY = zone.y + (r * lineHeight) + fontSize;
+      
       ctx.fillStyle = theme.visited;
       ctx.fillText("•", textX, textY);
       ctx.fillStyle = theme.ink;
-      fitText(ctx, name, textX + 16, textY, columnWidth - 24);
+      fitText(ctx, name, textX + 16, textY, zone.w - 20);
+      nameIndex++;
     }
-  });
+  }
 }
 
 function drawExportFooter916(ctx, theme) {
@@ -1026,8 +1022,8 @@ function drawExportFooter916(ctx, theme) {
 }
 
 function drawExportLegend(ctx, theme) {
-  const x = 50;
-  const y = 980;
+  const x = 380;
+  const y = 1000;
   ctx.font = `800 20px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
   drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
@@ -1093,52 +1089,48 @@ function drawExportInsights(ctx, theme) {
 }
 
 function drawExportList(ctx, visited, theme) {
-  const cardX = 540;
-  const cardY = 170;
-  const cardWidth = 506;
-  const cardHeight = 644;
-  const x = cardX + 24;
-  const y = cardY + 48;
-  const width = cardWidth - 48;
   const names = visited.map(getThaiName);
+  if (!names.length) return;
 
-  ctx.fillStyle = theme.paper;
-  roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20);
-  ctx.fill();
-  ctx.strokeStyle = theme.line;
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
+  const zones = [
+    { x: 50, y: 250, w: 220, h: 700 }, // Left
+    { x: 810, y: 250, w: 220, h: 700 } // Right
+  ];
 
-  ctx.fillStyle = theme.ink;
-  ctx.font = `800 30px ${FONT_STACK}`;
-  ctx.fillText("รายชื่อจังหวัด", x, y);
+  let fontSize = 24;
+  let lineHeight = fontSize * 1.5;
+  let itemsPerZone = [];
 
-  if (!names.length) {
-    ctx.fillStyle = theme.muted;
-    ctx.font = `700 22px ${FONT_STACK}`;
-    ctx.fillText("ยังไม่ได้เลือกจังหวัด", x, y + 48);
-    return;
+  while (fontSize > 10) {
+    lineHeight = fontSize + 10;
+    itemsPerZone = zones.map(z => Math.floor(z.h / lineHeight));
+    const totalCapacity = itemsPerZone.reduce((a, b) => a + b, 0);
+    if (totalCapacity >= names.length) {
+      break;
+    }
+    fontSize -= 1;
   }
 
-  const columns = names.length > 40 ? 3 : 2;
-  const rows = Math.ceil(names.length / columns);
-  const columnWidth = Math.floor(width / columns);
-  const lineHeight = 28;
+  ctx.fillStyle = theme.ink;
+  ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
 
-  ctx.font = `700 17px ${FONT_STACK}`;
-
-  names.forEach((name, index) => {
-    const col = Math.floor(index / rows);
-    const row = index % rows;
-    const textX = x + col * columnWidth;
-    const textY = y + 44 + row * lineHeight;
-    if (textY < cardY + cardHeight - 14) {
+  let nameIndex = 0;
+  for (let i = 0; i < zones.length; i++) {
+    const zone = zones[i];
+    const capacity = itemsPerZone[i];
+    for (let r = 0; r < capacity; r++) {
+      if (nameIndex >= names.length) break;
+      const name = names[nameIndex];
+      const textX = zone.x;
+      const textY = zone.y + (r * lineHeight) + fontSize;
+      
       ctx.fillStyle = theme.visited;
       ctx.fillText("•", textX, textY);
       ctx.fillStyle = theme.ink;
-      fitText(ctx, name, textX + 14, textY, columnWidth - 20);
+      fitText(ctx, name, textX + 16, textY, zone.w - 20);
+      nameIndex++;
     }
-  });
+  }
 }
 
 function fitText(ctx, text, x, y, maxWidth) {
