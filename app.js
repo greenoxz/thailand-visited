@@ -907,7 +907,7 @@ function drawExportMap916(ctx, theme) {
 }
 
 function drawExportLegend916(ctx, theme) {
-  const x = 380;
+  const x = 80;
   const y = 1750;
   ctx.font = `800 24px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
@@ -966,9 +966,8 @@ function drawExportList916(ctx, visited, theme) {
   if (!names.length) return;
 
   const zones = [
-    { x: 440, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 1)
-    { x: 650, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 2)
-    { x: 860, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 3)
+    { x: 680, y: 1150, w: 180, h: 600 }, // Gulf of Thailand (Safe from South tip)
+    { x: 870, y: 1150, w: 180, h: 600 },
   ];
 
   let fontSize = 28;
