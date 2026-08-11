@@ -965,43 +965,82 @@ function drawExportList916(ctx, visited, theme) {
   const names = visited.map(getThaiName);
   if (!names.length) return;
 
-  const zones = [
-    { x: 680, y: 1150, w: 180, h: 600 }, // Gulf of Thailand (Safe from South tip)
-    { x: 870, y: 1150, w: 180, h: 600 },
-  ];
+  const maskCanvas = document.createElement("canvas");
+  maskCanvas.width = 1080;
+  maskCanvas.height = 1920;
+  const mctx = maskCanvas.getContext("2d", { willReadFrequently: true });
+  mctx.fillStyle = "white";
+  mctx.fillRect(0, 0, 1080, 1920);
+  mctx.fillStyle = "black";
+  
+  const bounds = getBounds(state.features);
+  const project = createProjector(bounds);
+  const mapBox = { x: 20, y: 200, width: 1040, height: 1550 };
+  const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
+  const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
+  const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
 
-  let fontSize = 28;
-  let lineHeight = fontSize * 1.5;
-  let itemsPerZone = [];
+  mctx.save();
+  mctx.translate(offsetX, offsetY);
+  mctx.scale(scale, scale);
+  
+  mctx.lineJoin = "round";
+  mctx.lineWidth = 50 / scale; // 25px padding around map
+  mctx.strokeStyle = "black";
+  
+  state.features.forEach((feature) => {
+    const path = new Path2D(geometryToPath(feature.geometry, project));
+    mctx.fill(path);
+    mctx.stroke(path);
+  });
+  mctx.restore();
 
-  while (fontSize > 12) {
-    lineHeight = fontSize + 12;
-    itemsPerZone = zones.map(z => Math.floor(z.h / lineHeight));
-    const totalCapacity = itemsPerZone.reduce((a, b) => a + b, 0);
-    if (totalCapacity >= names.length) {
-      break;
+  const maskData = mctx.getImageData(0, 0, 1080, 1920).data;
+
+  function isRectClear(x, y, w, h) {
+    if (x < 450 || y < 900 || x + w > 1030 || y + h > 1720) return false;
+    const step = 8;
+    for (let py = Math.floor(y); py <= y + h; py += step) {
+      for (let px = Math.floor(x); px <= x + w; px += step) {
+        const idx = (py * 1080 + px) * 4;
+        if (maskData[idx] < 128) return false;
+      }
     }
-    fontSize -= 2;
+    return true;
   }
 
-  ctx.fillStyle = theme.ink;
+  const fontSize = 18;
+  const lineHeight = fontSize + 14;
   ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
+  const bulletWidth = ctx.measureText("• ").width;
+  
+  let currentY = 950;
+  let currentX = 450;
 
-  let nameIndex = 0;
-  for (let i = 0; i < zones.length; i++) {
-    const zone = zones[i];
-    const capacity = itemsPerZone[i];
-    for (let r = 0; r < capacity; r++) {
-      if (nameIndex >= names.length) break;
-      const name = names[nameIndex];
-      const textX = zone.x;
-      const textY = zone.y + (r * lineHeight) + fontSize;
+  for (const name of names) {
+    const nameWidth = ctx.measureText(name).width;
+    const totalWidth = bulletWidth + nameWidth + 12;
+    const boxHeight = fontSize + 8;
+    
+    let placed = false;
+    while (!placed && currentY < 1720) {
+      if (currentX + totalWidth > 1030) {
+        currentX = 450;
+        currentY += lineHeight;
+        continue;
+      }
       
-      ctx.fillStyle = theme.visited;
-      ctx.fillText("•", textX, textY);
-      ctx.fillStyle = theme.ink;
-      fitText(ctx, name, textX + 16, textY, zone.w - 20);
-      nameIndex++;
+      if (isRectClear(currentX, currentY - boxHeight + 4, totalWidth, boxHeight)) {
+        ctx.fillStyle = theme.visited;
+        ctx.fillText("•", currentX, currentY);
+        ctx.fillStyle = theme.ink;
+        ctx.fillText(name, currentX + bulletWidth, currentY);
+        
+        currentX += totalWidth + 16;
+        placed = true;
+      } else {
+        currentX += 12;
+      }
     }
   }
 }
