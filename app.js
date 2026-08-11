@@ -966,8 +966,9 @@ function drawExportList916(ctx, visited, theme) {
   if (!names.length) return;
 
   const zones = [
-    { x: 560, y: 900, w: 220, h: 800 }, // Gulf of Thailand (Left col)
-    { x: 800, y: 900, w: 220, h: 800 }, // Gulf of Thailand (Right col)
+    { x: 440, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 1)
+    { x: 650, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 2)
+    { x: 860, y: 1040, w: 190, h: 700 }, // Gulf of Thailand (Col 3)
   ];
 
   let fontSize = 28;
