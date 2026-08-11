@@ -843,7 +843,7 @@ function drawExportHeader(ctx, count, percent, theme) {
 function drawExportMap(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 260, y: 170, width: 560, height: 800 };
+  const mapBox = { x: 30, y: 170, width: 520, height: 800 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -1018,8 +1018,8 @@ function drawExportFooter916(ctx, theme) {
 }
 
 function drawExportLegend(ctx, theme) {
-  const x = 380;
-  const y = 1000;
+  const x = 60;
+  const y = 980;
   ctx.font = `800 20px ${FONT_STACK}`;
   drawLegendItem(ctx, x, y, theme.visited, "ไปมาแล้ว", theme);
   drawLegendItem(ctx, x + 160, y, theme.unvisited, "ยังไม่ไป", theme);
@@ -1089,8 +1089,8 @@ function drawExportList(ctx, visited, theme) {
   if (!names.length) return;
 
   const zones = [
-    { x: 50, y: 250, w: 220, h: 700 }, // Left
-    { x: 810, y: 250, w: 220, h: 700 } // Right
+    { x: 560, y: 200, w: 230, h: 800 },
+    { x: 810, y: 200, w: 230, h: 800 }
   ];
 
   let fontSize = 24;
