@@ -704,18 +704,6 @@ async function handleDownloadShareImage() {
 
     const blob = await createShareImage();
 
-    if (typeof File !== "undefined" && navigator.canShare && navigator.share) {
-      const file = new File([blob], "thailand-visited.png", { type: "image/png" });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "เช็คอินจังหวัดที่เที่ยวในไทย",
-          text: getShareText()
-        });
-        closeShareModalFunc();
-        return;
-      }
-    }
 
     downloadBlob(blob, "thailand-visited.png");
     closeShareModalFunc();
@@ -724,7 +712,7 @@ async function handleDownloadShareImage() {
   } finally {
     if (downloadShareImageButton) {
       downloadShareImageButton.disabled = false;
-      downloadShareImageButton.innerHTML = '<i class="fa-solid fa-download"></i><span>ดาวน์โหลด / แชร์ภาพนี้</span>';
+      downloadShareImageButton.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i><span>ดาวน์โหลดภาพนี้</span>';
     }
   }
 }
