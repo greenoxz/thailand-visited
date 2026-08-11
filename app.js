@@ -265,14 +265,12 @@ function updateSharePreview(themeKey) {
     drawExportHeader916(ctx, visited.length, percent, theme);
     drawExportMap916(ctx, theme);
     drawExportLegend916(ctx, theme);
-    drawExportInsights916(ctx, theme);
     drawExportList916(ctx, visited, theme);
     drawExportFooter916(ctx, theme);
   } else {
     drawExportHeader(ctx, visited.length, percent, theme);
     drawExportMap(ctx, theme);
     drawExportLegend(ctx, theme);
-    drawExportInsights(ctx, theme);
     drawExportList(ctx, visited, theme);
     drawExportUrl(ctx, theme);
     drawExportCredit(ctx, theme);
