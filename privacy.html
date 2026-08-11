@@ -3,21 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>นโยบายความเป็นส่วนตัว | Thailand Visited Map</title>
+    <title>นโยบายความเป็นส่วนตัว | เช็คอินจังหวัดที่เที่ยวในไทย</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <header class="lab-topbar">
+      <div class="lab-topbar-inner">
+        <a href="index.html" aria-label="กลับไปหน้าหลัก TermTem Lab">
+          <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
+          <h2>TermTem (เติมเต็ม) Lab</h2>
+        </a>
+      </div>
+    </header>
+
     <main class="app-shell policy-page">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Privacy Policy</p>
-          <h1>นโยบายความเป็นส่วนตัว</h1>
-        </div>
-      </header>
+
+      <div class="topbar" style="margin-bottom: 24px; display: block;">
+        <p class="eyebrow">Privacy Policy</p>
+        <h1 style="margin: 0; font-size: clamp(28px, 4vw, 42px);">นโยบายความเป็นส่วนตัว</h1>
+      </div>
 
       <section class="policy-content">
-        <p>Thailand Visited Map เป็นเว็บสำหรับบันทึกจังหวัดในประเทศไทยที่ผู้ใช้เคยไปมาแล้ว โดยออกแบบให้ข้อมูลการเลือกจังหวัดอยู่บนอุปกรณ์ของผู้ใช้เป็นหลัก</p>
+        <p>เช็คอินจังหวัดที่เที่ยวในไทย เป็นเว็บสำหรับบันทึกจังหวัดในประเทศไทยที่ผู้ใช้เคยไปมาแล้ว โดยออกแบบให้ข้อมูลการเลือกจังหวัดอยู่บนอุปกรณ์ของผู้ใช้เป็นหลัก</p>
 
         <h2>ข้อมูลที่จัดเก็บ</h2>
         <p>เว็บนี้จัดเก็บรายชื่อจังหวัดที่ผู้ใช้เลือกไว้ในเบราว์เซอร์ของผู้ใช้ผ่าน localStorage เพื่อให้กลับมาเปิดเว็บครั้งถัดไปแล้วยังเห็นข้อมูลเดิม</p>
@@ -38,8 +46,18 @@
       </section>
 
       <footer class="site-footer">
-        <a class="footer-brand" href="/maps">Thailand Visited Map</a>
-        <a class="footer-brand" href="https://termtem.in.th/" target="_blank" rel="noopener noreferrer">termtem.in.th</a>
+        <div class="footer-links">
+          <a href="index.html">หน้าแรก (Home)</a>
+          <a href="privacy.html">นโยบายความเป็นส่วนตัว (Privacy Policy)</a>
+          <a href="https://lab.termtem.in.th/" target="_blank" rel="noopener noreferrer">lab.termtem.in.th</a>
+        </div>
+        <div class="footer-bottom">
+          <a class="footer-tip" href="https://ko-fi.com/pisitz" target="_blank" rel="noopener noreferrer" title="เลี้ยงกาแฟผู้พัฒนาบน Ko-fi">
+            <img src="assets/kofi-sparkle.gif" alt="Ko-fi" class="footer-tip-icon" />
+            <span>เลี้ยงกาแฟผู้พัฒนา</span>
+          </a>
+          <p class="copyright">&copy; 2026 TermTem Lab</p>
+        </div>
       </footer>
     </main>
   </body>

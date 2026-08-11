@@ -1,6 +1,6 @@
 {
-  "name": "Thailand Visited Map",
-  "short_name": "Thailand Visited",
+  "name": "เช็คอินจังหวัดที่เที่ยวในไทย",
+  "short_name": "เช็คอินไทย",
   "description": "แผนที่เช็กอิน 77 จังหวัดที่เคยไปเที่ยวในไทย",
   "start_url": "/",
   "display": "standalone",

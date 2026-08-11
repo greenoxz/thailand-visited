@@ -188,6 +188,11 @@ const ratioBtns = document.querySelectorAll(".ratio-btn");
 const sharePreviewCanvas = document.querySelector("#sharePreviewCanvas");
 const downloadShareImageButton = document.querySelector("#downloadShareImageButton");
 
+const resetModal = document.querySelector("#resetModal");
+const closeResetModal = document.querySelector("#closeResetModal");
+const cancelResetButton = document.querySelector("#cancelResetButton");
+const confirmResetButton = document.querySelector("#confirmResetButton");
+
 init();
 
 async function init() {
@@ -704,7 +709,7 @@ async function handleDownloadShareImage() {
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: "Thailand Visited Map",
+          title: "เช็คอินจังหวัดที่เที่ยวในไทย",
           text: getShareText()
         });
         closeShareModalFunc();
@@ -836,7 +841,7 @@ function drawExportCredit(ctx, theme) {
 }
 
 function drawExportHeader(ctx, count, percent, theme) {
-  drawQRCode(ctx, "http://lab.termtem.in.th/maps", 946, 44, 80, theme);
+  // QR code removed
 
   ctx.fillStyle = theme.brandDark;
   ctx.font = `700 28px ${FONT_STACK}`;
@@ -877,7 +882,7 @@ function drawExportMap(ctx, theme) {
 }
 
 function drawExportHeader916(ctx, count, percent, theme) {
-  drawQRCode(ctx, "http://lab.termtem.in.th/maps", 926, 54, 96, theme);
+  // QR code removed
 
   ctx.fillStyle = theme.brandDark;
   ctx.font = `700 32px ${FONT_STACK}`;
@@ -1201,11 +1206,7 @@ search.addEventListener("input", (event) => {
   renderList();
 });
 
-resetButton.addEventListener("click", () => {
-  if (!state.visited.size) return;
-  if (!window.confirm("คุณต้องการล้างข้อมูลจังหวัดที่เคยไปทั้งหมดใช่หรือไม่?")) {
-    return;
-  }
+function executeReset() {
   state.visited.clear();
   localStorage.removeItem(STORAGE_KEY);
   updateProvinceStyles();
@@ -1214,7 +1215,38 @@ resetButton.addEventListener("click", () => {
   updateInsights();
   activeProvince.textContent = "เลือกจังหวัดบนแผนที่";
   activeStatus.textContent = "กดที่จังหวัดเพื่อเปลี่ยนสถานะ";
+}
+
+resetButton.addEventListener("click", () => {
+  if (!state.visited.size) return;
+  if (resetModal) {
+    resetModal.classList.add("is-open");
+    resetModal.setAttribute("aria-hidden", "false");
+  } else if (window.confirm("คุณต้องการล้างข้อมูลจังหวัดที่เคยไปทั้งหมดใช่หรือไม่?")) {
+    executeReset();
+  }
 });
+
+if (resetModal) {
+  const closeReset = () => {
+    resetModal.classList.remove("is-open");
+    resetModal.setAttribute("aria-hidden", "true");
+  };
+  
+  if (closeResetModal) closeResetModal.addEventListener("click", closeReset);
+  if (cancelResetButton) cancelResetButton.addEventListener("click", closeReset);
+  
+  resetModal.addEventListener("click", (e) => {
+    if (e.target === resetModal) closeReset();
+  });
+  
+  if (confirmResetButton) {
+    confirmResetButton.addEventListener("click", () => {
+      executeReset();
+      closeReset();
+    });
+  }
+}
 
 if (shareButton) shareButton.addEventListener("click", openShareModal);
 if (downloadShareImageButton) downloadShareImageButton.addEventListener("click", handleDownloadShareImage);
@@ -1258,3 +1290,25 @@ map.addEventListener("click", (event) => {
     state.suppressNextClick = false;
   }
 }, true);
+
+// Cookie Consent Logic
+const cookieConsent = document.querySelector("#cookieConsent");
+const acceptCookieButton = document.querySelector("#acceptCookie");
+const COOKIE_STORAGE_KEY = "thailand-visited-cookie-accepted";
+
+if (cookieConsent && acceptCookieButton) {
+  const isCookieAccepted = localStorage.getItem(COOKIE_STORAGE_KEY);
+  if (!isCookieAccepted) {
+    // Show banner after a short delay for smooth entry
+    setTimeout(() => {
+      cookieConsent.classList.add("is-visible");
+      cookieConsent.setAttribute("aria-hidden", "false");
+    }, 1000);
+  }
+
+  acceptCookieButton.addEventListener("click", () => {
+    localStorage.setItem(COOKIE_STORAGE_KEY, "true");
+    cookieConsent.classList.remove("is-visible");
+    cookieConsent.setAttribute("aria-hidden", "true");
+  });
+}

@@ -2,11 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "map.html", "use": "@vercel/static" },
     { "src": "privacy.html", "use": "@vercel/static" },
     { "src": "app.js", "use": "@vercel/static" },
     { "src": "styles.css", "use": "@vercel/static" },
-    { "src": "favicon.svg", "use": "@vercel/static" },
     { "src": "favicon.png", "use": "@vercel/static" },
+    { "src": "termtem-logo.png", "use": "@vercel/static" },
     { "src": "robots.txt", "use": "@vercel/static" },
     { "src": "sitemap.xml", "use": "@vercel/static" },
     { "src": "og-image.png", "use": "@vercel/static" },
@@ -16,8 +17,8 @@
     { "src": "assets/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/maps", "dest": "/index.html" },
-    { "src": "/maps/", "dest": "/index.html" },
+    { "src": "/maps", "dest": "/map.html" },
+    { "src": "/maps/", "dest": "/map.html" },
     { "src": "/maps/privacy", "dest": "/privacy.html" },
     { "src": "/maps/privacy/", "dest": "/privacy.html" },
     { "src": "/privacy", "dest": "/privacy.html" },
