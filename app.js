@@ -884,7 +884,7 @@ function drawExportHeader916(ctx, count, percent, theme) {
 function drawExportMap916(ctx, theme) {
   const bounds = getBounds(state.features);
   const project = createProjector(bounds);
-  const mapBox = { x: 40, y: 250, width: 1000, height: 1450 };
+  const mapBox = { x: 20, y: 200, width: 1040, height: 1550 };
   const scale = Math.min(mapBox.width / MAP_WIDTH, mapBox.height / MAP_HEIGHT);
   const offsetX = mapBox.x + (mapBox.width - MAP_WIDTH * scale) / 2;
   const offsetY = mapBox.y + (mapBox.height - MAP_HEIGHT * scale) / 2;
@@ -966,10 +966,8 @@ function drawExportList916(ctx, visited, theme) {
   if (!names.length) return;
 
   const zones = [
-    { x: 50, y: 350, w: 260, h: 450 }, // Top Left
-    { x: 770, y: 350, w: 260, h: 450 }, // Top Right
-    { x: 50, y: 900, w: 260, h: 800 }, // Bottom Left
-    { x: 770, y: 900, w: 260, h: 800 }, // Bottom Right
+    { x: 560, y: 900, w: 220, h: 800 }, // Gulf of Thailand (Left col)
+    { x: 800, y: 900, w: 220, h: 800 }, // Gulf of Thailand (Right col)
   ];
 
   let fontSize = 28;
