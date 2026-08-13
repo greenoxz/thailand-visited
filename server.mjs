@@ -21,7 +21,18 @@ const types = {
 createServer((request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host}`);
   const pathname = decodeURIComponent(url.pathname);
-  const requestedPath = pathname === "/" ? "/index.html" : pathname;
+  let requestedPath = pathname === "/" ? "/index.html" : pathname;
+  
+  if (requestedPath === "/maps" || requestedPath === "/maps/" || requestedPath === "/map" || requestedPath === "/map/") {
+    requestedPath = "/map.html";
+  } else if (requestedPath === "/bill-split" || requestedPath === "/bill-split/") {
+    requestedPath = "/bill-split.html";
+  } else if (requestedPath === "/sitemap" || requestedPath === "/sitemap/") {
+    requestedPath = "/sitemap.html";
+  } else if (requestedPath === "/privacy" || requestedPath === "/privacy/") {
+    requestedPath = "/privacy.html";
+  }
+
   const filePath = normalize(join(root, requestedPath));
 
   if (!filePath.startsWith(root) || !existsSync(filePath) || statSync(filePath).isDirectory()) {

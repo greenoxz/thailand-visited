@@ -1,5 +1,5 @@
 {
-  "scripts": {
-    "start": "node server.mjs"
-  }
+  "name": "thailand-visited",
+  "version": "1.0.0",
+  "private": true
 }
