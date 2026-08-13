@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>หารบิล หารค่าข้าว หารค่าเหล้า หารทริป แยกตามจริง | TermTem Lab</title>
+    <meta name="description" content="โปรแกรมช่วยหารบิล หารค่าข้าว หารค่าเหล้า หารทริป แบบละเอียดยิบและแฟร์ที่สุด ใครกินอะไรแยกจ่ายได้ สรุปใครต้องโอนให้ใคร สร้าง QR Code พร้อมเพย์ทันที ใช้งานฟรี" />
+    <meta name="keywords" content="หารบิล, หารค่าข้าว, หารค่าเหล้า, หารทริป, แอพหารเงิน, โปรแกรมหารบิล, เครื่องคิดเลขหารค่าอาหาร, หารค่าเบียร์, แชร์ค่าใช้จ่าย, Bill Splitter, หารบิลแยกตามจริง, คำนวณเงินกองกลาง, หารค่าปาร์ตี้, หารค่าเดินทาง, 스แกนพร้อมเพย์" />
+    <meta name="author" content="termtem.in.th" />
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "หารบิล หารค่าข้าว หารค่าเหล้า แยกตามจริง",
+      "alternateName": "แอปหารเงิน หารทริป Bill Splitter",
+      "url": "https://lab.termtem.in.th/bill-split.html",
+      "description": "โปรแกรมหารบิล หารค่าข้าว หารค่าเหล้า หารทริป แบบแฟร์ๆ แยกตามจริง ใครกินอะไรติ๊กได้เลย ระบบจะคำนวณว่าใครต้องโอนให้ใคร พร้อมสร้าง QR Code พร้อมเพย์ ใช้งานฟรี ไม่ต้องโหลดแอป",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "All",
+      "inLanguage": "th"
+    }
+    </script>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .app-shell {
+        max-width: 1000px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+      }
+      .app-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        width: 100%;
+      }
+      @media (min-width: 820px) {
+        .app-container {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          align-items: start;
+        }
+        .full-width {
+          grid-column: 1 / -1;
+        }
+      }
+      @media (max-width: 600px) {
+        .card {
+          padding: 16px;
+        }
+        .input-group {
+          flex-direction: column;
+        }
+        .btn-add {
+          padding: 12px 16px;
+          min-height: 44px;
+        }
+        .transfer-item {
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center;
+          gap: 16px;
+        }
+        .transfer-item > div:first-child {
+          align-items: center !important;
+        }
+        .result-section {
+          padding: 16px !important;
+        }
+        .transfer-list {
+          grid-template-columns: 1fr !important;
+        }
+        .summary-table th, .summary-table td {
+          padding: 8px 4px !important;
+          font-size: 13px;
+        }
+        .transfer-from-to {
+          font-size: 16px;
+        }
+        .transfer-amount {
+          font-size: 20px;
+        }
+      }
+      .topbar {
+        background: transparent;
+        padding: 16px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: none;
+      }
+      .card-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 16px;
+        color: var(--brand-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 12px;
+      }
+      
+      .input-group {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .input-group input {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        outline: none;
+        background: #fff;
+        flex: 1;
+        min-width: 0;
+      }.input-group input:focus {
+        border-color: var(--brand);
+        outline: none;
+      }
+      .btn-add {
+        background: var(--brand);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-add:hover {
+        background: var(--brand-dark);
+      }
+      
+      .list-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+      .list-item-content {
+        flex: 1;
+      }
+      .list-item-title {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      .list-item-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .btn-delete {
+        background: #f8ecec;
+        color: #d32f2f;
+        border: none;
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+      }
+      .btn-delete:hover {
+        background: #d32f2f;
+        color: white;
+      }
+
+      .share-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .share-badge {
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: #f6f2eb;
+        color: var(--muted);
+        transition: all 0.2s;
+        user-select: none;
+      }
+      .share-badge.active {
+        background: var(--brand);
+        color: white;
+        border-color: var(--brand-dark);
+      }
+      
+      .dropdown-container {
+        position: relative;
+        display: inline-block;
+      }
+      .dropdown-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 12px;
+        border-radius: 4px;
+      }
+      .dropdown-btn:hover {
+        background: #f6f2eb;
+      }
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border: 1px solid var(--line);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        border-radius: 8px;
+        z-index: 10;
+        min-width: 140px;
+        overflow: hidden;
+      }
+      .dropdown-menu.show {
+        display: block;
+      }
+      .dropdown-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--ink);
+        font-weight: 700;
+        transition: background 0.2s;
+      }
+      .dropdown-item:hover {
+        background: #f6f2eb;
+      }
+      .dropdown-item i {
+        margin-right: 8px;
+        width: 14px;
+        text-align: center;
+      }
+      
+      .toast {
+        visibility: hidden;
+        min-width: 280px;
+        background-color: #333;
+        color: white;
+        text-align: center;
+        border-radius: 100px;
+        padding: 14px 24px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s, bottom 0.3s;
+        font-weight: 700;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        font-size: 15px;
+      }
+      .toast.show {
+        visibility: visible;
+        opacity: 1;
+        bottom: 50px;
+      }
+      
+      .result-section {
+        background: var(--brand);
+        color: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: none;
+      }
+      .result-section h2 {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+        margin-top: 0;
+      }
+      
+      .transfer-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 16px;
+      }
+      .transfer-item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 16px;
+        border-radius: 12px;
+      }
+      .transfer-from-to {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .transfer-amount {
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .transfer-arrow {
+        color: #ffecd6;
+        opacity: 0.8;
+      }
+
+      .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        color: var(--ink);
+      }
+      .summary-table th, .summary-table td {
+        padding: 12px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      .summary-table th {
+        background: #f6f2eb;
+        font-weight: 800;
+      }
+      .summary-table td:first-child, .summary-table th:first-child {
+        text-align: left;
+      }
+      
+      .empty-state {
+        text-align: center;
+        color: var(--muted);
+        padding: 24px 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="lab-topbar">
+      <div class="lab-topbar-inner">
+        <a href="index.html" aria-label="หน้าหลัก TermTem Lab">
+          <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
+          <h2>TermTem (เติมเต็ม) Lab</h2>
+        </a>
+      </div>
+    </header>
+
+    <main class="app-shell" style="padding-top: 40px; min-height: calc(100vh - 60px);">
+      <header class="topbar" style="margin-bottom: 32px;">
+        <div>
+          <p class="eyebrow" style="margin-bottom: 12px;">Advanced Bill Splitter</p>
+          <h1 style="margin-bottom: 12px;">หารบิลแบบละเอียดยิบ</h1>
+          <p class="topbar-subtitle">คำนวณง่ายๆ หารตามจริง ใครกินอะไรติ๊กได้เลย สรุปใครต้องโอนให้ใคร</p>
+        </div>
+        <div>
+          <button onclick="shareApp()" style="background: transparent; border: 1px solid var(--brand); color: var(--brand); padding: 8px 16px; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s; white-space: nowrap;"><i class="fa-solid fa-share-nodes" style="margin-right: 6px;"></i> ส่งสรุปบิลให้เพื่อน</button>
+        </div>
+      </header>
+
+      <div class="app-container">
+        <!-- Section 1: คนในกลุ่ม -->
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-users"></i> สมาชิก (ใครกินบ้าง)</h2>
+          
+          <div class="input-group">
+            <input type="text" id="personName" placeholder="ชื่อ (เช่น เอ)" autocomplete="off" />
+            <input type="number" id="personPaid" placeholder="ออกเงินไปแล้ว (บ.)" min="0" step="0.01" />
+            <input type="text" id="personPromptpay" placeholder="พร้อมเพย์ (ตัวเลือก)" autocomplete="off" />
+            <button class="btn-add" id="btnSubmitPerson" onclick="addPerson()"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          
+          <div id="peopleList" class="list-group">
+            <!-- Render people here -->
+          </div>
+        </div>
+
+        <!-- Section 2: รายการอาหาร -->
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-receipt"></i> รายการอาหาร / บิล</h2>
+          
+          <div class="input-group" style="margin-bottom: 8px;">
+            <input type="text" id="itemName" placeholder="ชื่อเมนู (เช่น เบียร์)" autocomplete="off" />
+            <input type="number" id="itemPrice" placeholder="ราคา (บ.)" min="0" step="0.01" />
+            <button class="btn-add" id="btnSubmitItem" onclick="addItem()"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          
+          <div style="margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 12px; color: var(--muted); font-weight: 700;">เมนูด่วน:</span>
+            <button class="share-badge" onclick="setQuickItem('เบียร์')" type="button" style="margin:0;">เบียร์ 🍺</button>
+            <button class="share-badge" onclick="setQuickItem('น้ำแข็ง')" type="button" style="margin:0;">น้ำแข็ง 🧊</button>
+            <button class="share-badge" onclick="setQuickItem('เหล้า')" type="button" style="margin:0;">เหล้า 🥃</button>
+            <button class="share-badge" onclick="setQuickItem('มิกเซอร์')" type="button" style="margin:0;">มิกเซอร์ 🥤</button>
+            <button class="share-badge" onclick="setQuickItem('กับแกล้ม')" type="button" style="margin:0;">กับแกล้ม 🥜</button>
+            <button class="share-badge" onclick="setQuickItem('ของทอด')" type="button" style="margin:0;">ของทอด 🍟</button>
+            <button class="share-badge" onclick="setQuickItem('ข้าว')" type="button" style="margin:0;">ข้าว 🍚</button>
+          </div>
+          
+          <div id="itemsList" class="list-group">
+            <!-- Render items here -->
+          </div>
+        </div>
+
+        <!-- Section 3: สรุปผล -->
+        <div class="card full-width result-section" id="resultSection" style="display: none;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.3); padding-bottom: 20px; margin-bottom: 20px; gap: 16px;">
+            <h2 class="card-title" style="color: white; border: none; margin: 0; padding: 0;"><i class="fa-solid fa-money-bill-transfer"></i> สรุปการโอนเงิน</h2>
+            <div style="text-align: right; background: rgba(0,0,0,0.15); padding: 10px 16px; border-radius: 12px;">
+              <div style="font-size: 13px; opacity: 0.9; margin-bottom: 2px;">ยอดรวมบิลทั้งหมด</div>
+              <div id="grandTotal" style="font-size: 26px; font-weight: 800; line-height: 1;">0.00 บ.</div>
+            </div>
+          </div>
+          
+          <div id="transferSummary" class="transfer-list">
+            <!-- Render transfers here -->
+          </div>
+          
+          <div style="margin-top: 32px; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 24px;">
+            <h3 style="margin: 0 0 12px; font-size: 16px;">สรุปรายละเอียดรายคน</h3>
+            <div style="overflow-x: auto;">
+              <table class="summary-table">
+                <thead>
+                  <tr>
+                    <th>ชื่อ</th>
+                    <th>ยอดที่ต้องจ่ายจริง</th>
+                    <th>ออกเงินไปแล้ว</th>
+                    <th>ยอดสุทธิ (ได้คืน/ต้องจ่าย)</th>
+                  </tr>
+                </thead>
+                <tbody id="detailSummary">
+                  <!-- Render details here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 32px;">
+        <button onclick="clearData()" type="button" style="padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid rgba(211, 47, 47, 0.3); background: #ffffff; color: #d32f2f; transition: all 0.2s;"><i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i> ล้างข้อมูลเริ่มบิลใหม่</button>
+      </div>
+
+      <!-- SEO and User Guide Section -->
+      <section class="card full-width" style="margin-top: 40px; background: transparent; border: none; box-shadow: none; padding: 0 16px;">
+        <div>
+          <h2 style="font-size: 24px; font-weight: 800; color: var(--brand-dark); margin-top: 0; margin-bottom: 12px;">คู่มือการใช้งาน</h2>
+          <p style="color: var(--muted); line-height: 1.6; margin-bottom: 24px; font-size: 15px;">
+            ระบบนี้ถูกออกแบบมาเพื่อแก้ปัญหาโลกแตกเวลาไปเที่ยวหรือกินข้าวกับเพื่อน ไม่ว่าจะเป็นการ <strong>หารค่าข้าว</strong>, <strong>หารค่าเหล้า</strong>, <strong>หารค่าเบียร์</strong>, <strong>หารทริปเที่ยว</strong>, <strong>หารค่าน้ำมัน</strong>, <strong>หารค่าเดินทาง</strong> หรือ <strong>หารค่าใช้จ่ายปาร์ตี้</strong> ระบบนี้จะช่วยให้ทุกคนจ่ายเงินได้แบบแฟร์ๆ แยกตามจริง ไม่ต้องมานั่งเถียงกัน หรือกดเครื่องคิดเลขเองให้ปวดหัวอีกต่อไป!
+          </p>
+
+          <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 12px;"><i class="fa-solid fa-list-ol" style="color: var(--brand);"></i> วิธีการใช้งาน (How to use)</h3>
+          <ol style="color: var(--ink); line-height: 1.7; padding-left: 20px; margin-bottom: 24px; font-size: 15px;">
+            <li style="margin-bottom: 8px;"><strong>เพิ่มสมาชิก (คนกิน):</strong> ใส่ชื่อเพื่อนทุกคนที่ร่วมวง หากมีใคร <em>ออกเงินกองกลางไปก่อน</em> (เช่น รูดบัตรจ่ายค่าอาหาร, จ่ายค่าที่พักล่วงหน้า) ให้ใส่ตัวเลขในช่อง "ออกเงินไปแล้ว" และสามารถใส่เบอร์พร้อมเพย์ (PromptPay) เตรียมไว้รับเงินโอนได้เลย</li>
+            <li style="margin-bottom: 8px;"><strong>เพิ่มรายการอาหาร (บิล):</strong> กรอกชื่อเมนูและราคา (มีปุ่มเมนูด่วน เช่น เบียร์, น้ำแข็ง, ของทอด ให้กดง่ายๆ) จากนั้นเลือกว่าเมนูนี้ใครกินบ้าง โดยการกดติ๊กชื่อคนกินที่อยู่ใต้เมนูนั้นๆ (ใครไม่กินก็ไม่ต้องจ่าย!)</li>
+            <li style="margin-bottom: 8px;"><strong>ดูสรุปผล & แชร์บิล:</strong> ระบบจะคำนวณหักลบกลบหนี้ให้อัตโนมัติ พร้อมสร้าง QR Code ให้สแกนจ่ายได้ทันที และสามารถกดปุ่ม <em>"แชร์ให้เพื่อน"</em> ด้านบน เพื่อคัดลอกสรุปยอดส่งเข้าแชทได้เลย</li>
+            <li style="margin-bottom: 8px;"><strong>แก้ไข / ลบข้อมูล:</strong> หากกรอกผิด สามารถกดปุ่ม <em>จุดสามจุด (⋮)</em> ท้ายรายการเพื่อกดแก้ไขหรือลบได้ตลอดเวลา</li>
+            <li><strong>บันทึกอัตโนมัติ:</strong> ปิดเว็บหรือรีเฟรชหน้าจอข้อมูลก็ไม่หาย! หากต้องการเริ่มบิลใหม่ ให้กดปุ่ม <em>"ล้างข้อมูลเริ่มบิลใหม่"</em> สีแดงด้านล่างสุด</li>
+          </ol>
+
+          <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 12px;"><i class="fa-solid fa-magnifying-glass" style="color: var(--brand);"></i> ทำไมต้องใช้แอปหารบิลของเรา?</h3>
+          <p style="color: var(--muted); line-height: 1.6; margin-bottom: 0; font-size: 15px;">
+            เคยไหมที่ไปกินหมูกระทะ ชาบู หรือร้านเหล้า แล้วมีบางคนไม่กินเนื้อ บางคนไม่ดื่มแอลกอฮอล์ การ <em>หารเท่า</em> อาจจะไม่แฟร์สำหรับทุกคน โปรแกรม <strong>หารบิล หารค่าข้าว หารค่าเหล้า แยกตามจริง</strong> ของเราจึงเกิดขึ้นมาเพื่อคำนวณ <strong>การแชร์ค่าใช้จ่าย (Bill Splitter)</strong> อย่างยุติธรรมที่สุด เหมาะสำหรับนำไปใช้ <strong>หารทริป</strong>, <strong>หารค่าปิ้งย่าง</strong>, <strong>หารค่าเหล้ากับเพื่อน</strong>, <strong>แชร์ค่าห้อง</strong> หรือบิลอะไรก็ตามที่ต้องการความละเอียด ใช้งานฟรี 100% ไม่ต้องโหลดแอป โหลดไว และข้อมูลไม่หายแม้จะรีเฟรชหน้าเว็บ!
+          </p>
+        </div>
+      </section>
+
+      <footer class="site-footer" style="margin-top: 60px;">
+        <div class="footer-links">
+          <a href="index.html">หน้าแรก (Home)</a>
+          <a href="privacy.html">นโยบายความเป็นส่วนตัว (Privacy Policy)</a>
+          <a href="https://lab.termtem.in.th/" target="_blank" rel="noopener noreferrer">lab.termtem.in.th</a>
+        </div>
+        <div class="footer-bottom">
+          <a class="footer-tip" href="https://ko-fi.com/pisitz" target="_blank" rel="noopener noreferrer" title="เลี้ยงกาแฟผู้พัฒนาบน Ko-fi">
+            <img src="assets/kofi-sparkle.gif" alt="Ko-fi" class="footer-tip-icon" />
+            <span>เลี้ยงกาแฟผู้พัฒนา</span>
+          </a>
+          <p class="copyright">&copy; 2026 TermTem Lab</p>
+        </div>
+      </footer>
+    </main>
+
+    <div id="toast" class="toast"><i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> คัดลอกสำเร็จ!</div>
+
+    <script>
+      let people = [];
+      let items = [];
+      let personCounter = 1;
+      let itemCounter = 1;
+      let editingPersonId = null;
+      let editingItemId = null;
+
+      function loadData() {
+        try {
+          const savedPeople = localStorage.getItem('billSplitPeople');
+          const savedItems = localStorage.getItem('billSplitItems');
+          const savedPCounter = localStorage.getItem('billSplitPCounter');
+          const savedICounter = localStorage.getItem('billSplitICounter');
+          
+          if (savedPeople) people = JSON.parse(savedPeople);
+          if (savedItems) items = JSON.parse(savedItems);
+          if (savedPCounter) personCounter = parseInt(savedPCounter);
+          if (savedICounter) itemCounter = parseInt(savedICounter);
+        } catch (e) {
+          console.error("Failed to load local storage", e);
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem('billSplitPeople', JSON.stringify(people));
+        localStorage.setItem('billSplitItems', JSON.stringify(items));
+        localStorage.setItem('billSplitPCounter', personCounter);
+        localStorage.setItem('billSplitICounter', itemCounter);
+      }
+
+      function clearData() {
+        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลบิลนี้ทั้งหมด เพื่อเริ่มบิลใหม่?')) {
+          localStorage.removeItem('billSplitPeople');
+          localStorage.removeItem('billSplitItems');
+          localStorage.removeItem('billSplitPCounter');
+          localStorage.removeItem('billSplitICounter');
+          people = [];
+          items = [];
+          personCounter = 1;
+          itemCounter = 1;
+          render();
+        }
+      }
+
+      // DOM Elements
+      const peopleListEl = document.getElementById('peopleList');
+      const itemsListEl = document.getElementById('itemsList');
+      const resultSectionEl = document.getElementById('resultSection');
+      const transferSummaryEl = document.getElementById('transferSummary');
+      const detailSummaryEl = document.getElementById('detailSummary');
+
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+
+      function shareApp() {
+        let textToShare = 'มาแชร์ค่าใช้จ่ายกัน! ตัวนี้คำนวณแฟร์สุดๆ มี QR พร้อมเพย์ให้สแกนจ่ายได้เลย 👇';
+        
+        if (window.lastTransactions && window.lastTransactions.length > 0) {
+          textToShare = `💰 สรุปบิล\nยอดรวมทั้งหมด: ${formatMoney(window.lastGrandTotal)} บ.\n\n💸 สรุปการโอนเงิน:\n`;
+          window.lastTransactions.forEach(t => {
+            textToShare += `- ${t.from} โอนให้ ${t.to}: ${formatMoney(t.amount)} บ.\n`;
+            if (t.promptpay) {
+              textToShare += `  (พร้อมเพย์: ${t.promptpay})\n`;
+            }
+          });
+          textToShare += `\n🔗 หารบิลหน้าได้ที่:`;
+        } else if (people.length > 0) {
+          textToShare = `💰 สรุปบิล\nยังไม่มียอดที่ต้องโอนให้กัน 🎉\n\n🔗 หารบิลหน้าได้ที่:`;
+        }
+
+        const fullText = textToShare + '\n' + window.location.href;
+        
+        navigator.clipboard.writeText(fullText).then(() => {
+          showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> คัดลอกสรุปบิลเรียบร้อยแล้ว! นำไปวางในแชทได้เลย');
+        }).catch(err => {
+          console.error('Failed to copy text: ', err);
+          showToast('<i class="fa-solid fa-circle-xmark" style="color: #f44336; margin-right: 6px;"></i> ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง');
+        });
+      }
+
+      function addPerson() {
+        const nameInput = document.getElementById('personName');
+        const paidInput = document.getElementById('personPaid');
+        const ppInput = document.getElementById('personPromptpay');
+        
+        const name = nameInput.value.trim();
+        const paid = parseFloat(paidInput.value) || 0;
+        const promptpay = ppInput.value.trim();
+        
+        if (editingPersonId !== null) {
+          const person = people.find(p => p.id === editingPersonId);
+          if (person) {
+            person.name = name || person.name;
+            person.paid = paid;
+            person.promptpay = promptpay;
+          }
+          editingPersonId = null;
+          document.getElementById('btnSubmitPerson').innerHTML = '<i class="fa-solid fa-plus"></i>';
+        } else {
+          const newName = name || `คนที่ ${personCounter}`;
+          const newPerson = { id: personCounter++, name: newName, paid, promptpay };
+          people.push(newPerson);
+          items.forEach(item => item.sharedBy.push(newPerson.id));
+        }
+        
+        nameInput.value = '';
+        paidInput.value = '';
+        ppInput.value = '';
+        nameInput.focus();
+        
+        render();
+      }
+
+      function editPerson(id) {
+        const person = people.find(p => p.id === id);
+        if (!person) return;
+        
+        document.getElementById('personName').value = person.name;
+        document.getElementById('personPaid').value = person.paid || '';
+        document.getElementById('personPromptpay').value = person.promptpay || '';
+        
+        editingPersonId = id;
+        document.getElementById('btnSubmitPerson').innerHTML = '<i class="fa-solid fa-check"></i>';
+        
+        document.getElementById('personName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('personName').focus();
+      }
+
+      function removePerson(id) {
+        people = people.filter(p => p.id !== id);
+        // Remove from all items
+        items.forEach(item => {
+          item.sharedBy = item.sharedBy.filter(pid => pid !== id);
+        });
+        render();
+      }
+
+      function setQuickItem(name) {
+        document.getElementById('itemName').value = name;
+        document.getElementById('itemPrice').focus();
+      }
+
+      function addItem() {
+        if (people.length === 0) {
+          alert('กรุณาเพิ่มสมาชิกอย่างน้อย 1 คนก่อนเพิ่มรายการอาหาร');
+          return;
+        }
+
+        const nameInput = document.getElementById('itemName');
+        const priceInput = document.getElementById('itemPrice');
+        
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value);
+        
+        if (isNaN(price) || price <= 0) {
+          alert('กรุณาระบุราคารายการให้ถูกต้อง');
+          return;
+        }
+        
+        if (editingItemId !== null) {
+          const item = items.find(i => i.id === editingItemId);
+          if (item) {
+            item.name = name || item.name;
+            item.price = price;
+          }
+          editingItemId = null;
+          document.getElementById('btnSubmitItem').innerHTML = '<i class="fa-solid fa-plus"></i>';
+        } else {
+          const newName = name || `รายการที่ ${itemCounter}`;
+          const sharedBy = people.map(p => p.id);
+          items.push({ id: itemCounter++, name: newName, price, sharedBy });
+        }
+        
+        nameInput.value = '';
+        priceInput.value = '';
+        nameInput.focus();
+        
+        render();
+      }
+
+      function editItem(id) {
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+        
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemPrice').value = item.price;
+        
+        editingItemId = id;
+        document.getElementById('btnSubmitItem').innerHTML = '<i class="fa-solid fa-check"></i>';
+        
+        document.getElementById('itemName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('itemName').focus();
+      }
+
+      function removeItem(id) {
+        items = items.filter(i => i.id !== id);
+        render();
+      }
+
+      function toggleDropdown(id) {
+        // Close others first
+        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+          if (menu.id !== id) menu.classList.remove('show');
+        });
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('show');
+      }
+
+      window.onclick = function(event) {
+        if (!event.target.matches('.dropdown-btn') && !event.target.closest('.dropdown-btn')) {
+          document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+          });
+        }
+      }
+
+      function toggleShare(itemId, personId) {
+        const item = items.find(i => i.id === itemId);
+        if (!item) return;
+        
+        const index = item.sharedBy.indexOf(personId);
+        if (index > -1) {
+          item.sharedBy.splice(index, 1);
+        } else {
+          item.sharedBy.push(personId);
+        }
+        render();
+      }
+
+      function formatMoney(amount) {
+        return amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function calculateAndRender() {
+        if (people.length === 0) {
+          peopleListEl.innerHTML = '<div class="empty-state">ยังไม่มีสมาชิก</div>';
+          itemsListEl.innerHTML = '<div class="empty-state">กรุณาเพิ่มสมาชิกก่อน</div>';
+          resultSectionEl.style.display = 'none';
+          return;
+        }
+
+        // Render People List
+        peopleListEl.innerHTML = people.map(p => `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-title">${p.name} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
+              <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">${formatMoney(p.paid)} บ.</strong></div>
+            </div>
+            <div class="dropdown-container">
+              <button class="dropdown-btn" onclick="toggleDropdown('person-menu-${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+              <div class="dropdown-menu" id="person-menu-${p.id}">
+                <button class="dropdown-item" onclick="editPerson(${p.id})"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                <button class="dropdown-item" onclick="removePerson(${p.id})" style="color: #d32f2f;"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        // Render Items List
+        if (items.length === 0) {
+          itemsListEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการอาหาร</div>';
+          resultSectionEl.style.display = 'none';
+          return;
+        }
+
+        itemsListEl.innerHTML = items.map(item => {
+          const badges = people.map(p => {
+            const isActive = item.sharedBy.includes(p.id);
+            return `<div class="share-badge ${isActive ? 'active' : ''}" onclick="toggleShare(${item.id}, ${p.id})">${p.name}</div>`;
+          }).join('');
+          
+          const splitText = item.sharedBy.length > 0 
+            ? `หาร ${item.sharedBy.length} คน (คนละ ${formatMoney(item.price / item.sharedBy.length)} บ.)` 
+            : '<span style="color:red">ยังไม่ได้เลือกคนหาร</span>';
+
+          return `
+            <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="list-item-content">
+                  <div class="list-item-title">${item.name} - ${formatMoney(item.price)} บ.</div>
+                  <div class="list-item-subtitle">${splitText}</div>
+                </div>
+                <div class="dropdown-container">
+                  <button class="dropdown-btn" onclick="toggleDropdown('item-menu-${item.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                  <div class="dropdown-menu" id="item-menu-${item.id}">
+                    <button class="dropdown-item" onclick="editItem(${item.id})"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                    <button class="dropdown-item" onclick="removeItem(${item.id})" style="color: #d32f2f;"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                  </div>
+                </div>
+              </div>
+              <div class="share-selector">
+                ${badges}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Calculate Settlements
+        const balances = {};
+        let grandTotalAmount = 0;
+        
+        people.forEach(p => {
+          balances[p.id] = { id: p.id, name: p.name, paid: p.paid, promptpay: p.promptpay, shouldPay: 0, balance: 0 };
+        });
+
+        items.forEach(item => {
+          grandTotalAmount += item.price;
+          if (item.sharedBy.length > 0) {
+            const costPerPerson = item.price / item.sharedBy.length;
+            item.sharedBy.forEach(pid => {
+              if (balances[pid]) {
+                balances[pid].shouldPay += costPerPerson;
+              }
+            });
+          }
+        });
+
+        const debtors = [];
+        const creditors = [];
+
+        Object.values(balances).forEach(b => {
+          b.balance = b.paid - b.shouldPay;
+          if (b.balance < -0.01) { // Owes money
+            debtors.push({ name: b.name, amount: -b.balance, promptpay: b.promptpay });
+          } else if (b.balance > 0.01) { // Gets money back
+            creditors.push({ name: b.name, amount: b.balance, promptpay: b.promptpay });
+          }
+        });
+
+        debtors.sort((a, b) => b.amount - a.amount);
+        creditors.sort((a, b) => b.amount - a.amount);
+
+        const transactions = [];
+        let d = 0, c = 0;
+        
+        // Make deep copies for mutation during match making
+        const currentDebtors = JSON.parse(JSON.stringify(debtors));
+        const currentCreditors = JSON.parse(JSON.stringify(creditors));
+
+        while (d < currentDebtors.length && c < currentCreditors.length) {
+          const debtor = currentDebtors[d];
+          const creditor = currentCreditors[c];
+          
+          const amount = Math.min(debtor.amount, creditor.amount);
+          
+          if (amount > 0.01) {
+            transactions.push({
+              from: debtor.name,
+              to: creditor.name,
+              amount: amount,
+              promptpay: creditor.promptpay
+            });
+          }
+          
+          debtor.amount -= amount;
+          creditor.amount -= amount;
+          
+          if (debtor.amount < 0.01) d++;
+          if (creditor.amount < 0.01) c++;
+        }
+
+        // Save to global variables for sharing
+        window.lastTransactions = transactions;
+        window.lastGrandTotal = grandTotalAmount;
+
+        // Render Results
+        resultSectionEl.style.display = 'block';
+
+        if (transactions.length === 0) {
+          transferSummaryEl.innerHTML = '<div style="text-align:center; opacity:0.8; padding: 20px 0;">ยอดพอดีกัน ไม่ต้องมีใครโอนให้ใคร 🎉</div>';
+        } else {
+          transferSummaryEl.innerHTML = transactions.map(t => {
+            let qrCodeHtml = '';
+            if (t.promptpay) {
+               const qrUrl = `https://promptpay.io/${t.promptpay}/${t.amount.toFixed(2)}.png`;
+               qrCodeHtml = `
+                 <div style="background: white; padding: 12px; border-radius: 12px; text-align: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto;">
+                   <img src="${qrUrl}" alt="PromptPay QR" style="width: 130px; height: 130px; display: block;" />
+                   <div style="color: var(--ink); font-size: 13px; margin-top: 6px; font-weight: 800;">สแกนจ่าย</div>
+                 </div>
+               `;
+            }
+            return `
+            <div class="transfer-item">
+              <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; margin-bottom: 4px;">
+                  <span>${t.from}</span>
+                  <i class="fa-solid fa-arrow-right transfer-arrow"></i>
+                  <span>${t.to}</span>
+                </div>
+                <div style="font-size: 36px; font-weight: 800;">${formatMoney(t.amount)} <span style="font-size: 18px; font-weight: 400; opacity: 0.8;">บ.</span></div>
+              </div>
+              ${qrCodeHtml}
+            </div>
+          `}).join('');
+        }
+
+        // Update Grand Total
+        document.getElementById('grandTotal').innerText = formatMoney(grandTotalAmount) + ' บ.';
+
+        // Render Table details
+        detailSummaryEl.innerHTML = Object.values(balances).map(b => {
+          let statusHtml = '';
+          if (b.balance > 0.01) {
+            statusHtml = `<span style="color: #4caf50; font-weight: 800;">+ ${formatMoney(b.balance)}</span> (ได้คืน)`;
+          } else if (b.balance < -0.01) {
+            statusHtml = `<span style="color: #f44336; font-weight: 800;">- ${formatMoney(-b.balance)}</span> (ต้องจ่าย)`;
+          } else {
+            statusHtml = `<span style="color: #9e9e9e; font-weight: 800;">0.00</span> (พอดี)`;
+          }
+
+          return `
+            <tr>
+              <td><strong>${b.name}</strong></td>
+              <td>${formatMoney(b.shouldPay)}</td>
+              <td>${formatMoney(b.paid)}</td>
+              <td>${statusHtml}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function render() {
+        saveData();
+        calculateAndRender();
+      }
+
+      // Handle Enter key for inputs
+      document.getElementById('personName').addEventListener('keypress', e => e.key === 'Enter' && addPerson());
+      document.getElementById('personPaid').addEventListener('keypress', e => e.key === 'Enter' && addPerson());
+      document.getElementById('itemName').addEventListener('keypress', e => e.key === 'Enter' && addItem());
+      document.getElementById('itemPrice').addEventListener('keypress', e => e.key === 'Enter' && addItem());
+
+      // Initial render
+      loadData();
+      render();
+    </script>
+  </body>
+</html>
