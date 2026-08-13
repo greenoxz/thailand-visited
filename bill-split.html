@@ -32,6 +32,80 @@
         gap: 24px;
         width: 100%;
       }
+      /* Custom Modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s, visibility 0.2s;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .modal-overlay.show {
+        visibility: visible;
+        opacity: 1;
+      }
+      .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        width: 90%;
+        max-width: 320px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        transform: translateY(20px);
+        transition: transform 0.2s;
+        text-align: center;
+      }
+      .modal-overlay.show .modal-content {
+        transform: translateY(0);
+      }
+      .modal-content h3 {
+        margin: 0 0 12px;
+        color: var(--brand-dark);
+        font-size: 20px;
+      }
+      .modal-content p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+      }
+      .modal-actions button {
+        flex: 1;
+        padding: 12px;
+        border-radius: 100px;
+        font-weight: 800;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.2s;
+      }
+      .btn-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+      }
+      .btn-cancel:hover {
+        background: #e9ecef;
+      }
+      .btn-confirm {
+        background: #e53935;
+        color: white;
+        border: none;
+      }
+      .btn-confirm:hover {
+        background: #d32f2f;
+      }
+
       @media (min-width: 820px) {
         .app-container {
           grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -506,7 +580,19 @@
       </footer>
     </main>
 
-    <div id="toast" class="toast"><i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> คัดลอกสำเร็จ!</div>
+    <div id="toast">คัดลอกข้อมูลสำเร็จ!</div>
+
+    <!-- Custom Modal Overlay -->
+    <div id="confirmModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 id="modalTitle">ยืนยัน</h3>
+        <p id="modalMessage">คุณต้องการดำเนินการนี้ใช่หรือไม่?</p>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+          <button class="btn-confirm" id="btnConfirmAction">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       let people = [];
@@ -540,7 +626,7 @@
       }
 
       function clearData() {
-        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลบิลนี้ทั้งหมด เพื่อเริ่มบิลใหม่?')) {
+        showConfirmModal('เริ่มบิลใหม่', 'คุณแน่ใจหรือไม่ที่จะล้างข้อมูลทั้งหมด? ข้อมูลที่กรอกไว้จะหายไปไม่สามารถกู้คืนได้', () => {
           localStorage.removeItem('billSplitPeople');
           localStorage.removeItem('billSplitItems');
           localStorage.removeItem('billSplitPCounter');
@@ -549,8 +635,9 @@
           items = [];
           personCounter = 1;
           itemCounter = 1;
+          showToast('ล้างข้อมูลเรียบร้อย');
           render();
-        }
+        });
       }
 
       // DOM Elements
@@ -613,11 +700,13 @@
           }
           editingPersonId = null;
           document.getElementById('btnSubmitPerson').innerHTML = '<i class="fa-solid fa-plus"></i>';
+          showToast('บันทึกการแก้ไขสำเร็จ');
         } else {
           const newName = name || `คนที่ ${personCounter}`;
           const newPerson = { id: personCounter++, name: newName, paid, promptpay };
           people.push(newPerson);
           items.forEach(item => item.sharedBy.push(newPerson.id));
+          showToast('เพิ่มสมาชิกสำเร็จ');
         }
         
         nameInput.value = '';
@@ -629,7 +718,7 @@
       }
 
       function editPerson(id) {
-        const person = people.find(p => p.id === id);
+        const person = people.find(p => p.id == id);
         if (!person) return;
         
         document.getElementById('personName').value = person.name;
@@ -643,13 +732,38 @@
         document.getElementById('personName').focus();
       }
 
+      let confirmActionCallback = null;
+
+      function showConfirmModal(title, message, callback) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMessage').innerText = message;
+        confirmActionCallback = callback;
+        document.getElementById('confirmModal').classList.add('show');
+      }
+
+      function closeModal() {
+        document.getElementById('confirmModal').classList.remove('show');
+        confirmActionCallback = null;
+      }
+
+      document.getElementById('btnConfirmAction').addEventListener('click', () => {
+        if (confirmActionCallback) confirmActionCallback();
+        closeModal();
+      });
+
       function removePerson(id) {
-        people = people.filter(p => p.id !== id);
-        // Remove from all items
-        items.forEach(item => {
-          item.sharedBy = item.sharedBy.filter(pid => pid !== id);
+        const person = people.find(p => p.id == id);
+        if (!person) return;
+        
+        showConfirmModal('ยืนยันการลบ', `คุณต้องการลบ "${person.name}" หรือไม่?`, () => {
+          people = people.filter(p => p.id != id);
+          // Remove from all items
+          items.forEach(item => {
+            item.sharedBy = item.sharedBy.filter(pid => pid != id);
+          });
+          showToast('ลบสมาชิกเรียบร้อย');
+          render();
         });
-        render();
       }
 
       function setQuickItem(name) {
@@ -682,10 +796,12 @@
           }
           editingItemId = null;
           document.getElementById('btnSubmitItem').innerHTML = '<i class="fa-solid fa-plus"></i>';
+          showToast('บันทึกการแก้ไขสำเร็จ');
         } else {
           const newName = name || `รายการที่ ${itemCounter}`;
           const sharedBy = people.map(p => p.id);
           items.push({ id: itemCounter++, name: newName, price, sharedBy });
+          showToast('เพิ่มรายการสำเร็จ');
         }
         
         nameInput.value = '';
@@ -696,7 +812,7 @@
       }
 
       function editItem(id) {
-        const item = items.find(i => i.id === id);
+        const item = items.find(i => i.id == id);
         if (!item) return;
         
         document.getElementById('itemName').value = item.name;
@@ -710,8 +826,14 @@
       }
 
       function removeItem(id) {
-        items = items.filter(i => i.id !== id);
-        render();
+        const item = items.find(i => i.id == id);
+        if (!item) return;
+        
+        showConfirmModal('ยืนยันการลบ', `คุณต้องการลบ "${item.name}" หรือไม่?`, () => {
+          items = items.filter(i => i.id != id);
+          showToast('ลบรายการเรียบร้อย');
+          render();
+        });
       }
 
       function toggleDropdown(id) {
