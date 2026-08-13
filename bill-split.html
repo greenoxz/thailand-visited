@@ -26,13 +26,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <style>
-      .app-shell {
-        max-width: 1000px !important;
-        margin: 0 auto !important;
-        width: 100% !important;
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-      }
       .app-container {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
@@ -376,7 +369,7 @@
       </div>
     </header>
 
-    <main class="app-shell" style="padding-top: 40px; min-height: calc(100vh - 60px);">
+    <main class="app-shell" style="min-height: calc(100vh - 60px);">
       <header class="topbar" style="margin-bottom: 32px;">
         <div>
           <p class="eyebrow" style="margin-bottom: 12px;">Advanced Bill Splitter</p>
@@ -395,7 +388,7 @@
           
           <div class="input-group">
             <input type="text" id="personName" placeholder="ชื่อ (เช่น เอ)" autocomplete="off" />
-            <input type="number" id="personPaid" placeholder="ออกเงินไปแล้ว (บ.)" min="0" step="0.01" />
+            <input type="number" id="personPaid" placeholder="ออกเงินไปแล้ว (฿)" min="0" step="0.01" />
             <input type="text" id="personPromptpay" placeholder="พร้อมเพย์ (ตัวเลือก)" autocomplete="off" />
             <button class="btn-add" id="btnSubmitPerson" onclick="addPerson()"><i class="fa-solid fa-plus"></i></button>
           </div>
@@ -411,7 +404,7 @@
           
           <div class="input-group" style="margin-bottom: 8px;">
             <input type="text" id="itemName" placeholder="ชื่อเมนู (เช่น เบียร์)" autocomplete="off" />
-            <input type="number" id="itemPrice" placeholder="ราคา (บ.)" min="0" step="0.01" />
+            <input type="number" id="itemPrice" placeholder="ราคา (฿)" min="0" step="0.01" />
             <button class="btn-add" id="btnSubmitItem" onclick="addItem()"><i class="fa-solid fa-plus"></i></button>
           </div>
           
@@ -437,7 +430,7 @@
             <h2 class="card-title" style="color: white; border: none; margin: 0; padding: 0;"><i class="fa-solid fa-money-bill-transfer"></i> สรุปการโอนเงิน</h2>
             <div style="text-align: right; background: rgba(0,0,0,0.15); padding: 10px 16px; border-radius: 12px;">
               <div style="font-size: 13px; opacity: 0.9; margin-bottom: 2px;">ยอดรวมบิลทั้งหมด</div>
-              <div id="grandTotal" style="font-size: 26px; font-weight: 800; line-height: 1;">0.00 บ.</div>
+              <div id="grandTotal" style="font-size: 26px; font-weight: 800; line-height: 1;">฿0.00</div>
             </div>
           </div>
           
@@ -577,9 +570,9 @@
         let textToShare = 'มาแชร์ค่าใช้จ่ายกัน! ตัวนี้คำนวณแฟร์สุดๆ มี QR พร้อมเพย์ให้สแกนจ่ายได้เลย 👇';
         
         if (window.lastTransactions && window.lastTransactions.length > 0) {
-          textToShare = `💰 สรุปบิล\nยอดรวมทั้งหมด: ${formatMoney(window.lastGrandTotal)} บ.\n\n💸 สรุปการโอนเงิน:\n`;
+          textToShare = `💰 สรุปบิล\nยอดรวมทั้งหมด: ฿${formatMoney(window.lastGrandTotal)}\n\n💸 สรุปการโอนเงิน:\n`;
           window.lastTransactions.forEach(t => {
-            textToShare += `- ${t.from} โอนให้ ${t.to}: ${formatMoney(t.amount)} บ.\n`;
+            textToShare += `- ${t.from} โอนให้ ${t.to}: ฿${formatMoney(t.amount)}\n`;
             if (t.promptpay) {
               textToShare += `  (พร้อมเพย์: ${t.promptpay})\n`;
             }
@@ -765,7 +758,7 @@
           <div class="list-item">
             <div class="list-item-content">
               <div class="list-item-title">${p.name} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
-              <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">${formatMoney(p.paid)} บ.</strong></div>
+              <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">฿${formatMoney(p.paid)}</strong></div>
             </div>
             <div class="dropdown-container">
               <button class="dropdown-btn" onclick="toggleDropdown('person-menu-${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -791,14 +784,14 @@
           }).join('');
           
           const splitText = item.sharedBy.length > 0 
-            ? `หาร ${item.sharedBy.length} คน (คนละ ${formatMoney(item.price / item.sharedBy.length)} บ.)` 
+            ? `หาร ${item.sharedBy.length} คน (คนละ ฿${formatMoney(item.price / item.sharedBy.length)})` 
             : '<span style="color:red">ยังไม่ได้เลือกคนหาร</span>';
 
           return `
             <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div class="list-item-content">
-                  <div class="list-item-title">${item.name} - ${formatMoney(item.price)} บ.</div>
+                  <div class="list-item-title">${item.name} - ฿${formatMoney(item.price)}</div>
                   <div class="list-item-subtitle">${splitText}</div>
                 </div>
                 <div class="dropdown-container">
@@ -909,7 +902,7 @@
                   <i class="fa-solid fa-arrow-right transfer-arrow"></i>
                   <span>${t.to}</span>
                 </div>
-                <div style="font-size: 36px; font-weight: 800;">${formatMoney(t.amount)} <span style="font-size: 18px; font-weight: 400; opacity: 0.8;">บ.</span></div>
+                <div style="font-size: 36px; font-weight: 800;"><span style="font-size: 20px; font-weight: 400; opacity: 0.8;">฿</span>${formatMoney(t.amount)}</div>
               </div>
               ${qrCodeHtml}
             </div>
@@ -917,7 +910,7 @@
         }
 
         // Update Grand Total
-        document.getElementById('grandTotal').innerText = formatMoney(grandTotalAmount) + ' บ.';
+        document.getElementById('grandTotal').innerText = '฿' + formatMoney(grandTotalAmount);
 
         // Render Table details
         detailSummaryEl.innerHTML = Object.values(balances).map(b => {
