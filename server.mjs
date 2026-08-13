@@ -19,32 +19,52 @@ const types = {
 };
 
 createServer((request, response) => {
-  const url = new URL(request.url || "/", `http://${request.headers.host}`);
-  const pathname = decodeURIComponent(url.pathname);
-  let requestedPath = pathname === "/" ? "/index.html" : pathname;
-  
-  if (requestedPath === "/maps" || requestedPath === "/maps/" || requestedPath === "/map" || requestedPath === "/map/") {
-    requestedPath = "/map.html";
-  } else if (requestedPath === "/bill-split" || requestedPath === "/bill-split/") {
-    requestedPath = "/bill-split.html";
-  } else if (requestedPath === "/sitemap" || requestedPath === "/sitemap/") {
-    requestedPath = "/sitemap.html";
-  } else if (requestedPath === "/privacy" || requestedPath === "/privacy/") {
-    requestedPath = "/privacy.html";
+  try {
+    const host = request.headers.host || `localhost:${port}`;
+    const url = new URL(request.url || "/", `http://${host}`);
+    const pathname = decodeURIComponent(url.pathname);
+    let requestedPath = pathname === "/" ? "/index.html" : pathname;
+    
+    if (requestedPath === "/maps" || requestedPath === "/maps/" || requestedPath === "/map" || requestedPath === "/map/") {
+      requestedPath = "/map.html";
+    } else if (requestedPath === "/bill-split" || requestedPath === "/bill-split/") {
+      requestedPath = "/bill-split.html";
+    } else if (requestedPath === "/sitemap" || requestedPath === "/sitemap/") {
+      requestedPath = "/sitemap.html";
+    } else if (requestedPath === "/privacy" || requestedPath === "/privacy/") {
+      requestedPath = "/privacy.html";
+    }
+
+    const filePath = normalize(join(root, requestedPath));
+
+    if (!filePath.startsWith(root) || !existsSync(filePath) || statSync(filePath).isDirectory()) {
+      response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+      response.end("Not found");
+      return;
+    }
+
+    response.writeHead(200, {
+      "content-type": types[extname(filePath)] || "application/octet-stream"
+    });
+    const stream = createReadStream(filePath);
+    stream.on("error", (err) => {
+      console.error("Stream error:", err);
+      if (!response.headersSent) {
+        response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+      }
+      response.end("Internal server error");
+    });
+    stream.pipe(response);
+  } catch (err) {
+    console.error("Request handling error:", err);
+    if (!response.headersSent) {
+      response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+    }
+    response.end("Internal server error");
   }
-
-  const filePath = normalize(join(root, requestedPath));
-
-  if (!filePath.startsWith(root) || !existsSync(filePath) || statSync(filePath).isDirectory()) {
-    response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-    response.end("Not found");
-    return;
-  }
-
-  response.writeHead(200, {
-    "content-type": types[extname(filePath)] || "application/octet-stream"
-  });
-  createReadStream(filePath).pipe(response);
+}).on("error", (err) => {
+  console.error("Server error:", err);
 }).listen(port, () => {
   console.log(`Thailand visited map running at http://localhost:${port}`);
 });
+

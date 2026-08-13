@@ -613,11 +613,20 @@
             <input type="text" id="personName" placeholder="ชื่อ (เช่น เอ)" autocomplete="off" />
             <input type="number" id="personPaid" placeholder="ออกเงินไปแล้ว (฿)" min="0" step="0.01" />
             <input type="text" id="personPromptpay" placeholder="พร้อมเพย์ (ตัวเลือก)" autocomplete="off" />
-            <button class="btn-add" id="btnSubmitPerson" onclick="addPerson()"><i class="fa-solid fa-plus"></i></button>
+            <button type="button" class="btn-add" id="btnSubmitPerson" onclick="addPerson()"><i class="fa-solid fa-plus"></i></button>
           </div>
           
           <div id="peopleList" class="list-group">
             <!-- Render people here -->
+          </div>
+
+          <div id="solePayerContainer" style="margin-top: 16px; padding: 12px; background: #faf8f5; border: 1px solid var(--line); border-radius: 10px; display: none;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--brand-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-credit-card" style="color: var(--brand);"></i> ใครเป็นคนออกเงินทั้งหมด? (โหมดคนเดียวรูดจ่าย)
+            </div>
+            <div id="solePayerButtons" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+              <!-- Render sole payer buttons here -->
+            </div>
           </div>
         </div>
 
@@ -628,7 +637,7 @@
           <div class="input-group" style="margin-bottom: 8px;">
             <input type="text" id="itemName" placeholder="ชื่อเมนู (เช่น เบียร์)" autocomplete="off" />
             <input type="number" id="itemPrice" placeholder="ราคา (฿)" min="0" step="0.01" />
-            <button class="btn-add" id="btnSubmitItem" onclick="addItem()"><i class="fa-solid fa-plus"></i></button>
+            <button type="button" class="btn-add" id="btnSubmitItem" onclick="addItem()"><i class="fa-solid fa-plus"></i></button>
           </div>
           
           <div style="margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
@@ -757,6 +766,7 @@
       let itemCounter = 1;
       let editingPersonId = null;
       let editingItemId = null;
+      let solePayerId = null;
 
       function loadData() {
         try {
@@ -764,13 +774,31 @@
           const savedItems = localStorage.getItem('billSplitItems');
           const savedPCounter = localStorage.getItem('billSplitPCounter');
           const savedICounter = localStorage.getItem('billSplitICounter');
+          const savedSolePayer = localStorage.getItem('billSplitSolePayerId');
           
           if (savedPeople) people = JSON.parse(savedPeople);
           if (savedItems) items = JSON.parse(savedItems);
           if (savedPCounter) personCounter = parseInt(savedPCounter);
           if (savedICounter) itemCounter = parseInt(savedICounter);
+          if (savedSolePayer !== null && savedSolePayer !== 'null') {
+            solePayerId = parseInt(savedSolePayer);
+          }
+
+          if (!Array.isArray(people)) people = [];
+          if (!Array.isArray(items)) items = [];
+
+          const maxPId = people.length > 0 ? Math.max(...people.map(p => p.id || 0)) : 0;
+          if (personCounter <= maxPId) personCounter = maxPId + 1;
+          const maxIId = items.length > 0 ? Math.max(...items.map(i => i.id || 0)) : 0;
+          if (itemCounter <= maxIId) itemCounter = maxIId + 1;
+
+          items.forEach(item => {
+            if (!Array.isArray(item.sharedBy)) item.sharedBy = [];
+          });
         } catch (e) {
           console.error("Failed to load local storage", e);
+          people = [];
+          items = [];
         }
       }
 
@@ -779,6 +807,7 @@
         localStorage.setItem('billSplitItems', JSON.stringify(items));
         localStorage.setItem('billSplitPCounter', personCounter);
         localStorage.setItem('billSplitICounter', itemCounter);
+        localStorage.setItem('billSplitSolePayerId', solePayerId);
       }
 
       function clearData() {
@@ -787,13 +816,27 @@
           localStorage.removeItem('billSplitItems');
           localStorage.removeItem('billSplitPCounter');
           localStorage.removeItem('billSplitICounter');
+          localStorage.removeItem('billSplitSolePayerId');
           people = [];
           items = [];
           personCounter = 1;
           itemCounter = 1;
+          solePayerId = null;
           showToast('ล้างข้อมูลเรียบร้อย');
           render();
         });
+      }
+
+      function setSolePayer(id) {
+        solePayerId = id;
+        if (id !== null) {
+          const person = people.find(p => p.id === id);
+          const name = person ? person.name : '';
+          showToast(`<i class="fa-solid fa-credit-card" style="color: #4caf50; margin-right: 6px;"></i> กำหนดให้ "${name}" เป็นคนออกเงินคนเดียว`);
+        } else {
+          showToast('เปลี่ยนเป็นโหมดกรอกเงินตามจริง');
+        }
+        render();
       }
 
       // DOM Elements
@@ -824,14 +867,14 @@
           if (items.length > 0) {
             textToShare += `\n📝 รายการทั้งหมด (${items.length} รายการ):\n`;
             items.forEach(item => {
-              const sharedPeopleNames = item.sharedBy
+              const sharedPeopleNames = (item.sharedBy || [])
                 .map(pid => {
                   const p = people.find(person => person.id === pid);
                   return p ? p.name : '';
                 })
                 .filter(Boolean);
               
-              if (item.sharedBy.length > 0) {
+              if (item.sharedBy && item.sharedBy.length > 0) {
                 const perPerson = item.price / item.sharedBy.length;
                 textToShare += `- ${item.name}: ฿${formatMoney(item.price)} (หาร ${item.sharedBy.length} คน: ${sharedPeopleNames.join(', ')} -> คนละ ฿${formatMoney(perPerson)})\n`;
               } else {
@@ -874,20 +917,30 @@
         const paidInput = document.getElementById('personPaid');
         const ppInput = document.getElementById('personPromptpay');
         
-        const name = nameInput.value.trim();
-        const paid = parseFloat(paidInput.value) || 0;
-        const promptpay = ppInput.value.trim();
+        const name = nameInput ? nameInput.value.trim() : '';
+        const paid = paidInput && paidInput.value ? (parseFloat(paidInput.value) || 0) : 0;
+        const promptpay = ppInput ? ppInput.value.trim() : '';
         
+        const maxPId = people.length > 0 ? Math.max(...people.map(p => p.id || 0)) : 0;
+        if (personCounter <= maxPId) personCounter = maxPId + 1;
+
         const newName = name || `คนที่ ${personCounter}`;
         const newPerson = { id: personCounter++, name: newName, paid, promptpay };
         people.push(newPerson);
-        items.forEach(item => item.sharedBy.push(newPerson.id));
+        
+        items.forEach(item => {
+          if (!Array.isArray(item.sharedBy)) item.sharedBy = [];
+          if (!item.sharedBy.includes(newPerson.id)) {
+            item.sharedBy.push(newPerson.id);
+          }
+        });
+        
         showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> เพิ่มสมาชิกเรียบร้อย');
         
-        nameInput.value = '';
-        paidInput.value = '';
-        ppInput.value = '';
-        nameInput.focus();
+        if (nameInput) nameInput.value = '';
+        if (paidInput) paidInput.value = '';
+        if (ppInput) ppInput.value = '';
+        if (nameInput) nameInput.focus();
         
         render();
       }
@@ -920,7 +973,11 @@
         if (person) {
           const name = nameInput.value.trim();
           person.name = name || person.name;
-          person.paid = parseFloat(paidInput.value) || 0;
+          const newPaid = parseFloat(paidInput.value) || 0;
+          if (solePayerId !== null && newPaid !== person.paid) {
+            solePayerId = null;
+          }
+          person.paid = newPaid;
           person.promptpay = ppInput.value.trim();
         }
         
@@ -954,6 +1011,7 @@
         
         showConfirmModal('ยืนยันการลบ', `คุณต้องการลบ "${person.name}" หรือไม่?`, () => {
           people = people.filter(p => p.id != id);
+          if (solePayerId === id) solePayerId = null;
           // Remove from all items
           items.forEach(item => {
             item.sharedBy = item.sharedBy.filter(pid => pid != id);
@@ -1082,6 +1140,55 @@
       }
 
       function calculateAndRender() {
+        // Calculate total bill amount
+        let grandTotalAmount = 0;
+        items.forEach(item => {
+          grandTotalAmount += item.price;
+        });
+
+        // Apply Sole Payer rule if set
+        if (solePayerId !== null) {
+          const solePayer = people.find(p => p.id === solePayerId);
+          if (solePayer) {
+            people.forEach(p => {
+              if (p.id === solePayerId) {
+                p.paid = grandTotalAmount;
+              } else {
+                p.paid = 0;
+              }
+            });
+          } else {
+            solePayerId = null;
+          }
+        }
+
+        // Render Sole Payer Container Buttons
+        const solePayerContainerEl = document.getElementById('solePayerContainer');
+        const solePayerButtonsEl = document.getElementById('solePayerButtons');
+
+        if (people.length > 0 && solePayerContainerEl && solePayerButtonsEl) {
+          solePayerContainerEl.style.display = 'block';
+          
+          let btnsHtml = `
+            <button class="share-badge ${solePayerId === null ? 'active' : ''}" onclick="setSolePayer(null)" type="button" style="margin:0;">
+              กรอกแยกตามจริง
+            </button>
+          `;
+          
+          people.forEach(p => {
+            const isSelected = (solePayerId === p.id);
+            btnsHtml += `
+              <button class="share-badge ${isSelected ? 'active' : ''}" onclick="setSolePayer(${p.id})" type="button" style="margin:0;">
+                ${p.name}
+              </button>
+            `;
+          });
+          
+          solePayerButtonsEl.innerHTML = btnsHtml;
+        } else if (solePayerContainerEl) {
+          solePayerContainerEl.style.display = 'none';
+        }
+
         if (people.length === 0) {
           peopleListEl.innerHTML = '<div class="empty-state">ยังไม่มีสมาชิก</div>';
           itemsListEl.innerHTML = '<div class="empty-state">กรุณาเพิ่มสมาชิกก่อน</div>';
@@ -1107,10 +1214,12 @@
               </div>
             `;
           }
+          const isSolePayer = (solePayerId === p.id);
+          const soleBadge = isSolePayer ? '<span style="background: #eef7ee; color: #2e7d32; border: 1px solid #a5d6a7; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-left: 6px;"><i class="fa-solid fa-credit-card"></i> ออกเงินคนเดียว</span>' : '';
           return `
             <div class="list-item">
               <div class="list-item-content">
-                <div class="list-item-title">${p.name} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
+                <div class="list-item-title">${p.name} ${soleBadge} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
                 <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">฿${formatMoney(p.paid)}</strong></div>
               </div>
               <div class="dropdown-container">
@@ -1181,7 +1290,7 @@
 
         // Calculate Settlements
         const balances = {};
-        let grandTotalAmount = 0;
+        grandTotalAmount = 0;
         
         people.forEach(p => {
           balances[p.id] = { id: p.id, name: p.name, paid: p.paid, promptpay: p.promptpay, shouldPay: 0, balance: 0 };
@@ -1327,10 +1436,17 @@
       }
 
       // Handle Enter key for inputs
-      document.getElementById('personName').addEventListener('keypress', e => e.key === 'Enter' && addPerson());
-      document.getElementById('personPaid').addEventListener('keypress', e => e.key === 'Enter' && addPerson());
-      document.getElementById('itemName').addEventListener('keypress', e => e.key === 'Enter' && addItem());
-      document.getElementById('itemPrice').addEventListener('keypress', e => e.key === 'Enter' && addItem());
+      const pNameEl = document.getElementById('personName');
+      const pPaidEl = document.getElementById('personPaid');
+      const pPpEl = document.getElementById('personPromptpay');
+      const iNameEl = document.getElementById('itemName');
+      const iPriceEl = document.getElementById('itemPrice');
+
+      if (pNameEl) pNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPerson(); } });
+      if (pPaidEl) pPaidEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPerson(); } });
+      if (pPpEl) pPpEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPerson(); } });
+      if (iNameEl) iNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addItem(); } });
+      if (iPriceEl) iPriceEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addItem(); } });
 
       // Initial render
       loadData();
