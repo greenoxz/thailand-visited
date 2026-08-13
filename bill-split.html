@@ -370,14 +370,11 @@
     </header>
 
     <main class="app-shell" style="min-height: calc(100vh - 60px);">
-      <header class="topbar" style="margin-bottom: 32px;">
+      <header class="topbar">
         <div>
-          <p class="eyebrow" style="margin-bottom: 12px;">Advanced Bill Splitter</p>
-          <h1 style="margin-bottom: 12px;">หารบิลแบบละเอียดยิบ</h1>
+          <p class="eyebrow" style="margin-bottom: 12px;">Party Bill Splitter</p>
+          <h1 style="margin-bottom: 12px;">หารค่าข้าว หารค่าเหล้า</h1>
           <p class="topbar-subtitle">คำนวณง่ายๆ หารตามจริง ใครกินอะไรติ๊กได้เลย สรุปใครต้องโอนให้ใคร</p>
-        </div>
-        <div>
-          <button onclick="shareApp()" style="background: transparent; border: 1px solid var(--brand); color: var(--brand); padding: 8px 16px; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s; white-space: nowrap;"><i class="fa-solid fa-share-nodes" style="margin-right: 6px;"></i> ส่งสรุปบิลให้เพื่อน</button>
         </div>
       </header>
 
@@ -454,6 +451,12 @@
                   <!-- Render details here -->
                 </tbody>
               </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 32px;">
+              <button onclick="shareApp()" style="background: white; color: var(--brand-dark); border: none; padding: 14px 32px; border-radius: 100px; font-weight: 800; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fa-regular fa-copy" style="font-size: 18px;"></i> คัดลอกส่งสรุปบิลให้เพื่อน
+              </button>
             </div>
           </div>
         </div>
