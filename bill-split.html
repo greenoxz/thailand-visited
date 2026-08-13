@@ -408,6 +408,78 @@
         text-align: center;
       }
       
+      .inline-edit-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        background: #faf8f5;
+        border: 1.5px solid var(--brand);
+        border-radius: 12px;
+        padding: 14px;
+        box-sizing: border-box;
+      }
+      .inline-edit-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--brand-dark);
+        margin-bottom: 2px;
+      }
+      .inline-edit-inputs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .inline-edit-inputs input {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+        flex: 1;
+        min-width: 90px;
+        height: 36px;
+        box-sizing: border-box;
+      }
+      .inline-edit-inputs input:focus {
+        border-color: var(--brand);
+      }
+      .inline-edit-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 4px;
+      }
+      .btn-inline-save {
+        background: var(--brand);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-inline-save:hover {
+        background: var(--brand-dark);
+      }
+      .btn-inline-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-inline-cancel:hover {
+        background: #e9ecef;
+      }
+      
       #toast, .toast {
         visibility: hidden;
         min-width: 280px;
@@ -802,23 +874,11 @@
         const paid = parseFloat(paidInput.value) || 0;
         const promptpay = ppInput.value.trim();
         
-        if (editingPersonId !== null) {
-          const person = people.find(p => p.id === editingPersonId);
-          if (person) {
-            person.name = name || person.name;
-            person.paid = paid;
-            person.promptpay = promptpay;
-          }
-          editingPersonId = null;
-          document.getElementById('btnSubmitPerson').innerHTML = '<i class="fa-solid fa-plus"></i>';
-          showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกสำเร็จ');
-        } else {
-          const newName = name || `คนที่ ${personCounter}`;
-          const newPerson = { id: personCounter++, name: newName, paid, promptpay };
-          people.push(newPerson);
-          items.forEach(item => item.sharedBy.push(newPerson.id));
-          showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกสำเร็จ');
-        }
+        const newName = name || `คนที่ ${personCounter}`;
+        const newPerson = { id: personCounter++, name: newName, paid, promptpay };
+        people.push(newPerson);
+        items.forEach(item => item.sharedBy.push(newPerson.id));
+        showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> เพิ่มสมาชิกเรียบร้อย');
         
         nameInput.value = '';
         paidInput.value = '';
@@ -829,18 +889,40 @@
       }
 
       function editPerson(id) {
-        const person = people.find(p => p.id == id);
-        if (!person) return;
-        
-        document.getElementById('personName').value = person.name;
-        document.getElementById('personPaid').value = person.paid || '';
-        document.getElementById('personPromptpay').value = person.promptpay || '';
-        
         editingPersonId = id;
-        document.getElementById('btnSubmitPerson').innerHTML = '<i class="fa-solid fa-check"></i>';
+        render();
+        setTimeout(() => {
+          const el = document.getElementById(`inlinePersonName-${id}`);
+          if (el) {
+            el.focus();
+            el.select();
+          }
+        }, 50);
+      }
+
+      function cancelInlinePerson() {
+        editingPersonId = null;
+        render();
+      }
+
+      function saveInlinePerson(id) {
+        const nameInput = document.getElementById(`inlinePersonName-${id}`);
+        const paidInput = document.getElementById(`inlinePersonPaid-${id}`);
+        const ppInput = document.getElementById(`inlinePersonPp-${id}`);
         
-        document.getElementById('personName').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('personName').focus();
+        if (!nameInput) return;
+        
+        const person = people.find(p => p.id === id);
+        if (person) {
+          const name = nameInput.value.trim();
+          person.name = name || person.name;
+          person.paid = parseFloat(paidInput.value) || 0;
+          person.promptpay = ppInput.value.trim();
+        }
+        
+        editingPersonId = null;
+        showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกการแก้ไขเรียบร้อย');
+        render();
       }
 
       let confirmActionCallback = null;
@@ -899,21 +981,10 @@
           return;
         }
         
-        if (editingItemId !== null) {
-          const item = items.find(i => i.id === editingItemId);
-          if (item) {
-            item.name = name || item.name;
-            item.price = price;
-          }
-          editingItemId = null;
-          document.getElementById('btnSubmitItem').innerHTML = '<i class="fa-solid fa-plus"></i>';
-          showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกสำเร็จ');
-        } else {
-          const newName = name || `รายการที่ ${itemCounter}`;
-          const sharedBy = people.map(p => p.id);
-          items.push({ id: itemCounter++, name: newName, price, sharedBy });
-          showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกสำเร็จ');
-        }
+        const newName = name || `รายการที่ ${itemCounter}`;
+        const sharedBy = people.map(p => p.id);
+        items.push({ id: itemCounter++, name: newName, price, sharedBy });
+        showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> เพิ่มรายการเรียบร้อย');
         
         nameInput.value = '';
         priceInput.value = '';
@@ -923,17 +994,41 @@
       }
 
       function editItem(id) {
-        const item = items.find(i => i.id == id);
-        if (!item) return;
-        
-        document.getElementById('itemName').value = item.name;
-        document.getElementById('itemPrice').value = item.price;
-        
         editingItemId = id;
-        document.getElementById('btnSubmitItem').innerHTML = '<i class="fa-solid fa-check"></i>';
+        render();
+        setTimeout(() => {
+          const el = document.getElementById(`inlineItemName-${id}`);
+          if (el) {
+            el.focus();
+            el.select();
+          }
+        }, 50);
+      }
+
+      function cancelInlineItem() {
+        editingItemId = null;
+        render();
+      }
+
+      function saveInlineItem(id) {
+        const nameInput = document.getElementById(`inlineItemName-${id}`);
+        const priceInput = document.getElementById(`inlineItemPrice-${id}`);
         
-        document.getElementById('itemName').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('itemName').focus();
+        if (!nameInput) return;
+        
+        const item = items.find(i => i.id === id);
+        if (item) {
+          const name = nameInput.value.trim();
+          const price = parseFloat(priceInput.value);
+          if (!isNaN(price) && price > 0) {
+            item.price = price;
+          }
+          item.name = name || item.name;
+        }
+        
+        editingItemId = null;
+        showToast('<i class="fa-solid fa-circle-check" style="color: #4caf50; margin-right: 6px;"></i> บันทึกการแก้ไขเรียบร้อย');
+        render();
       }
 
       function removeItem(id) {
@@ -991,21 +1086,39 @@
         }
 
         // Render People List
-        peopleListEl.innerHTML = people.map(p => `
-          <div class="list-item">
-            <div class="list-item-content">
-              <div class="list-item-title">${p.name} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
-              <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">฿${formatMoney(p.paid)}</strong></div>
-            </div>
-            <div class="dropdown-container">
-              <button class="dropdown-btn" onclick="toggleDropdown('person-menu-${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-              <div class="dropdown-menu" id="person-menu-${p.id}">
-                <button class="dropdown-item" onclick="editPerson(${p.id})"><i class="fa-solid fa-pen"></i> แก้ไข</button>
-                <button class="dropdown-item" onclick="removePerson(${p.id})" style="color: #d32f2f;"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+        peopleListEl.innerHTML = people.map(p => {
+          if (p.id === editingPersonId) {
+            return `
+              <div class="inline-edit-box">
+                <div class="inline-edit-title"><i class="fa-solid fa-pen"></i> แก้ไขข้อมูลสมาชิก</div>
+                <div class="inline-edit-inputs">
+                  <input type="text" id="inlinePersonName-${p.id}" value="${p.name}" placeholder="ชื่อ" autocomplete="off" onkeydown="if(event.key==='Enter') saveInlinePerson(${p.id})">
+                  <input type="number" id="inlinePersonPaid-${p.id}" value="${p.paid || ''}" placeholder="ออกเงินไปแล้ว (฿)" min="0" step="0.01" onkeydown="if(event.key==='Enter') saveInlinePerson(${p.id})">
+                  <input type="text" id="inlinePersonPp-${p.id}" value="${p.promptpay || ''}" placeholder="พร้อมเพย์" autocomplete="off" onkeydown="if(event.key==='Enter') saveInlinePerson(${p.id})">
+                </div>
+                <div class="inline-edit-actions">
+                  <button class="btn-inline-cancel" onclick="cancelInlinePerson()">ยกเลิก</button>
+                  <button class="btn-inline-save" onclick="saveInlinePerson(${p.id})"><i class="fa-solid fa-check"></i> บันทึก</button>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-title">${p.name} ${p.promptpay ? '<i class="fa-solid fa-qrcode" style="color:var(--muted); font-size: 12px; margin-left: 4px;" title="มีพร้อมเพย์"></i>' : ''}</div>
+                <div class="list-item-subtitle">ออกเงินไปแล้ว: <strong style="color: var(--brand-dark)">฿${formatMoney(p.paid)}</strong></div>
+              </div>
+              <div class="dropdown-container">
+                <button class="dropdown-btn" onclick="toggleDropdown('person-menu-${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="dropdown-menu" id="person-menu-${p.id}">
+                  <button class="dropdown-item" onclick="editPerson(${p.id})"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                  <button class="dropdown-item" onclick="removePerson(${p.id})" style="color: #d32f2f;"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                </div>
               </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         // Render Items List
         if (items.length === 0) {
@@ -1015,6 +1128,22 @@
         }
 
         itemsListEl.innerHTML = items.map(item => {
+          if (item.id === editingItemId) {
+            return `
+              <div class="inline-edit-box">
+                <div class="inline-edit-title"><i class="fa-solid fa-pen"></i> แก้ไขรายการอาหาร</div>
+                <div class="inline-edit-inputs">
+                  <input type="text" id="inlineItemName-${item.id}" value="${item.name}" placeholder="ชื่อเมนู" autocomplete="off" onkeydown="if(event.key==='Enter') saveInlineItem(${item.id})">
+                  <input type="number" id="inlineItemPrice-${item.id}" value="${item.price}" placeholder="ราคา (฿)" min="0" step="0.01" onkeydown="if(event.key==='Enter') saveInlineItem(${item.id})">
+                </div>
+                <div class="inline-edit-actions">
+                  <button class="btn-inline-cancel" onclick="cancelInlineItem()">ยกเลิก</button>
+                  <button class="btn-inline-save" onclick="saveInlineItem(${item.id})"><i class="fa-solid fa-check"></i> บันทึก</button>
+                </div>
+              </div>
+            `;
+          }
+
           const badges = people.map(p => {
             const isActive = item.sharedBy.includes(p.id);
             return `<div class="share-badge ${isActive ? 'active' : ''}" onclick="toggleShare(${item.id}, ${p.id})">${p.name}</div>`;
