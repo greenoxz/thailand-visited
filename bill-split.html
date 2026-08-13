@@ -852,6 +852,10 @@
             textToShare += `ยอดพอดีกัน ไม่ต้องมีใครโอนให้ใคร 🎉\n`;
           }
 
+          if (window.lastZeroBalanceNames && window.lastZeroBalanceNames.length > 0) {
+            textToShare += `- สมาชิกที่ยอดพอดีแล้ว (ไม่ต้องโอน): ${window.lastZeroBalanceNames.join(', ')}\n`;
+          }
+
           textToShare += `\n🔗 หารบิลหน้าได้ที่:`;
         }
 
@@ -1239,17 +1243,23 @@
           if (creditor.amount < 0.01) c++;
         }
 
+        const zeroBalanceNames = Object.values(balances)
+          .filter(b => Math.abs(b.balance) <= 0.01 && b.shouldPay > 0)
+          .map(b => b.name);
+
         // Save to global variables for sharing
         window.lastTransactions = transactions;
         window.lastGrandTotal = grandTotalAmount;
+        window.lastZeroBalanceNames = zeroBalanceNames;
 
         // Render Results
         resultSectionEl.style.display = 'block';
 
+        let transferHtml = '';
         if (transactions.length === 0) {
-          transferSummaryEl.innerHTML = '<div style="text-align:center; opacity:0.8; padding: 20px 0;">ยอดพอดีกัน ไม่ต้องมีใครโอนให้ใคร 🎉</div>';
+          transferHtml = '<div style="text-align:center; opacity:0.8; padding: 20px 0; grid-column: 1 / -1;">ยอดพอดีกัน ไม่ต้องมีใครโอนให้ใคร 🎉</div>';
         } else {
-          transferSummaryEl.innerHTML = transactions.map(t => {
+          transferHtml = transactions.map(t => {
             let qrCodeHtml = '';
             if (t.promptpay) {
                const qrUrl = `https://promptpay.io/${t.promptpay}/${t.amount.toFixed(2)}.png`;
@@ -1273,7 +1283,18 @@
               ${qrCodeHtml}
             </div>
           `}).join('');
+
+          if (zeroBalanceNames.length > 0) {
+            transferHtml += `
+              <div style="grid-column: 1 / -1; background: rgba(0, 0, 0, 0.2); padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-check" style="color: #4caf50; font-size: 16px;"></i> 
+                <span>สมาชิกที่ยอดพอดีแล้ว ไม่ต้องโอนเงิน: <strong>${zeroBalanceNames.join(', ')}</strong></span>
+              </div>
+            `;
+          }
         }
+
+        transferSummaryEl.innerHTML = transferHtml;
 
         // Update Grand Total
         document.getElementById('grandTotal').innerText = '฿' + formatMoney(grandTotalAmount);
