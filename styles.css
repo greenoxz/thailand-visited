@@ -11,6 +11,37 @@
   --hover: #3f8c7a;
 }
 
+:root[data-theme='dark'] {
+  --brand-dark: var(--brand);
+  --bg: #181614;
+  --ink: #e6dfd8;
+  --muted: #9c958e;
+  --line: #3d3834;
+  --paper: #24201c;
+  --unvisited: #382c22;
+  --hover: #5cba9f;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  margin-left: auto;
+}
+
+.theme-toggle:hover {
+  background: var(--line);
+}
+
 @font-face {
   font-family: "LINE Seed Sans TH";
   src: url("assets/fonts/LINESeedSansTH_W_Rg.woff2") format("woff2");
@@ -52,6 +83,12 @@ input {
   font: inherit;
 }
 
+[data-theme='dark'] input,
+[data-theme='dark'] textarea,
+[data-theme='dark'] select {
+  color: #ffffff !important;
+}
+
 .app-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -87,6 +124,10 @@ input {
 .lab-topbar-inner img {
   height: 36px;
   width: auto;
+}
+
+[data-theme='dark'] .lab-topbar-inner img {
+  content: url('termtem-logo-white.png');
 }
 
 .lab-topbar-inner h2 {
@@ -164,7 +205,7 @@ h1 {
 .province-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 250, 243, 0.82);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
   box-shadow: 0 18px 50px rgba(73, 53, 37, 0.08);
 }
 
@@ -223,13 +264,13 @@ h1 {
   border: 1px solid rgba(184, 63, 39, 0.35);
   border-radius: 8px;
   color: var(--brand-dark);
-  background: #fff5ef;
+  background: var(--paper);
   cursor: pointer;
 }
 
 #resetButton:hover {
   border-color: var(--brand);
-  background: #ffe6db;
+  background: var(--unvisited);
 }
 
 .btn-share-main,
@@ -405,7 +446,7 @@ h1 {
   padding: 0 12px;
   border: 2px solid var(--line);
   border-radius: 10px;
-  background: #fffdf8;
+  background: var(--paper);
   color: var(--ink);
   font-size: 13.5px;
   font-weight: 700;
@@ -419,7 +460,7 @@ h1 {
 
 .ratio-btn.is-active {
   border-color: var(--brand);
-  background: #fff5ef;
+  background: var(--paper);
   color: var(--brand-dark);
 }
 
@@ -492,7 +533,7 @@ h1 {
   padding: 12px 8px;
   border: 2px solid var(--line);
   border-radius: 12px;
-  background: #fffdf8;
+  background: var(--paper);
   cursor: pointer;
   transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -505,7 +546,7 @@ h1 {
 
 .export-theme-card.is-active {
   border-color: var(--brand);
-  background: #fff5ef;
+  background: var(--paper);
   box-shadow: none;
 }
 
@@ -689,7 +730,7 @@ h1 {
   width: 22px;
   height: 22px;
   border-radius: 5px;
-  border: 2px solid #fffaf3;
+  border: 2px solid var(--paper);
   box-shadow: 0 0 0 1px rgba(38, 33, 29, 0.12);
 }
 
@@ -736,7 +777,7 @@ h1 {
 
 .province {
   fill: var(--unvisited);
-  stroke: #fffaf3;
+  stroke: var(--paper);
   stroke-width: 1.2;
   cursor: pointer;
   transition: fill 160ms ease, stroke 160ms ease, filter 160ms ease;
@@ -787,7 +828,7 @@ h1 {
   border-radius: 8px;
   padding: 0 12px;
   color: var(--ink);
-  background: #fffdf8;
+  background: var(--paper);
 }
 
 .search-box input:focus {
@@ -815,7 +856,7 @@ h1 {
   margin-top: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #eaded0;
+  background: var(--line);
 }
 
 .progress-bar {
@@ -835,7 +876,7 @@ h1 {
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffdf8;
+  background: var(--paper);
 }
 
 .list-mode button {
@@ -891,21 +932,21 @@ h1 {
 
 .province-toggle:hover {
   border-color: var(--line);
-  background: #fff7ef;
+  background: var(--paper);
 }
 
 .province-toggle:active {
-  background: #faebd9;
+  background: var(--unvisited);
   transform: scale(0.98);
 }
 
 .province-toggle.is-visited {
   border-color: rgba(233, 95, 61, 0.28);
-  background: #fff0e9;
+  background: var(--unvisited);
 }
 
 .province-toggle.is-visited:active {
-  background: #ffe0d0;
+  background: var(--unvisited);
   transform: scale(0.98);
 }
 
@@ -917,7 +958,7 @@ h1 {
   border: 1px solid #cdbfaf;
   border-radius: 6px;
   color: transparent;
-  background: #fffdf8;
+  background: var(--paper);
   font-size: 14px;
   font-weight: 800;
 }
@@ -1143,7 +1184,7 @@ h1 {
 .policy-content {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 250, 243, 0.82);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
   box-shadow: 0 18px 50px rgba(73, 53, 37, 0.08);
   padding: 28px;
   color: var(--ink);
@@ -1450,5 +1491,67 @@ h1 {
   .cookie-text p {
     font-size: 13px;
     text-align: center;
+  }
+}
+
+/* Cookie Banner */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  padding: 16px 20px;
+  z-index: 9999;
+  font-size: 14px;
+}
+
+.cookie-banner-content {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cookie-banner a {
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.cookie-btn {
+  background: var(--brand);
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.cookie-btn:hover {
+  background: var(--brand-dark);
+}
+
+@media (min-width: 768px) {
+  .cookie-banner-content {
+    flex-direction: row;
+  }
+  .cookie-banner p {
+    text-align: left;
   }
 }

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6552505597075020" crossorigin="anonymous"></script>
-    <title>ผังเว็บไซต์ (Sitemap) | TermTem (เติมเต็ม) Lab</title>
-    <meta name="title" content="ผังเว็บไซต์ (Sitemap) | TermTem (เติมเต็ม) Lab" />
+    <title>Sitemap | TermTem (เติมเต็ม) Lab</title>
+    <meta name="title" content="Sitemap | TermTem (เติมเต็ม) Lab" />
     <meta name="description" content="ผังเว็บไซต์ TermTem (เติมเต็ม) Lab รวมลิงก์หน้าทั้งหมดของเว็บไซต์ เช่น เช็คอิน 77 จังหวัดเที่ยวไทย, แอปหารบิล หารค่าข้าว หารค่าเหล้า และนโยบายความเป็นส่วนตัว" />
     <meta name="keywords" content="sitemap, ผังเว็บไซต์, TermTem Lab, เช็คอิน 77 จังหวัด, หารบิล, หารค่าข้าว, หารค่าเหล้า" />
     <meta name="robots" content="index, follow" />
@@ -20,7 +20,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "ผังเว็บไซต์ (Sitemap)",
+      "name": "Sitemap",
       "url": "https://lab.termtem.in.th/sitemap.html",
       "description": "ผังเว็บไซต์แสดงโครงสร้างลิงก์ทั้งหมดของ TermTem Lab"
     }
@@ -153,7 +153,20 @@
         transform: scale(1.04);
       }
     </style>
-  </head>
+  
+    <!-- Dark Mode Init -->
+    <script>
+      (function() {
+        try {
+          var localTheme = localStorage.getItem('theme');
+          var sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+</head>
   <body>
     <header class="lab-topbar">
       <div class="lab-topbar-inner">
@@ -161,13 +174,17 @@
           <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
           <h2>TermTem (เติมเต็ม) Lab</h2>
         </a>
+        <button class="theme-toggle" id="themeToggle" aria-label="สลับโหมดมืด/สว่าง">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
       </div>
     </header>
 
     <main class="app-shell">
       <div class="topbar" style="margin-bottom: 24px; display: block;">
         <p class="eyebrow">Sitemap</p>
-        <h1 style="margin: 0; font-size: clamp(28px, 4vw, 42px);">ผังเว็บไซต์ (Sitemap)</h1>
+        <h1 style="margin: 0; font-size: clamp(28px, 4vw, 42px);">Sitemap</h1>
         <p style="color: var(--muted); margin-top: 8px; font-size: 16px;">รวมลิงก์หน้าทั้งหมดภายในเว็บไซต์ TermTem (เติมเต็ม) Lab</p>
       </div>
 
@@ -184,7 +201,7 @@
         <div class="sitemap-card">
           <div class="sitemap-card-header">
             <div class="sitemap-card-icon"><i class="fa-solid fa-house"></i></div>
-            <h2 class="sitemap-card-title"><a href="index.html">หน้าแรก (Home)</a></h2>
+            <h2 class="sitemap-card-title"><a href="index.html">Home</a></h2>
           </div>
           <ul class="sitemap-list">
             <li>
@@ -247,9 +264,9 @@
 
       <footer class="site-footer">
         <div class="footer-links">
-          <a href="index.html">หน้าแรก (Home)</a>
-          <a href="sitemap.html">ผังเว็บไซต์ (Sitemap)</a>
-          <a href="privacy.html">นโยบายความเป็นส่วนตัว (Privacy Policy)</a>
+          <a href="index.html">Home</a>
+          <a href="sitemap.html">Sitemap</a>
+          <a href="privacy.html">Privacy Policy</a>
           <a href="https://lab.termtem.in.th/" target="_blank" rel="noopener noreferrer">lab.termtem.in.th</a>
         </div>
         <div class="footer-bottom">
@@ -261,5 +278,6 @@
         </div>
       </footer>
     </main>
+  <script src="/theme.js"></script>
   </body>
 </html>

@@ -105,7 +105,20 @@
       }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  </head>
+  
+    <!-- Dark Mode Init -->
+    <script>
+      (function() {
+        try {
+          var localTheme = localStorage.getItem('theme');
+          var sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+</head>
   <body>
     <header class="lab-topbar">
       <div class="lab-topbar-inner">
@@ -113,6 +126,10 @@
           <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
           <h2>TermTem (เติมเต็ม) Lab</h2>
         </a>
+        <button class="theme-toggle" id="themeToggle" aria-label="สลับโหมดมืด/สว่าง">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
       </div>
     </header>
 
@@ -147,9 +164,9 @@
 
       <footer class="site-footer">
         <div class="footer-links">
-          <a href="index.html">หน้าแรก (Home)</a>
-          <a href="sitemap.html">ผังเว็บไซต์ (Sitemap)</a>
-          <a href="privacy.html">นโยบายความเป็นส่วนตัว (Privacy Policy)</a>
+          <a href="index.html">Home</a>
+          <a href="sitemap.html">Sitemap</a>
+          <a href="privacy.html">Privacy Policy</a>
           <a href="https://lab.termtem.in.th/" target="_blank" rel="noopener noreferrer">lab.termtem.in.th</a>
         </div>
         <div class="footer-bottom">
@@ -161,5 +178,6 @@
         </div>
       </footer>
     </main>
+  <script src="/theme.js"></script>
   </body>
 </html>

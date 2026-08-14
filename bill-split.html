@@ -111,7 +111,7 @@
         opacity: 1;
       }
       .modal-content {
-        background: white;
+        background: var(--paper);
         border-radius: 20px;
         padding: 24px;
         width: 90%;
@@ -149,12 +149,12 @@
         transition: all 0.2s;
       }
       .btn-cancel {
-        background: #f1f3f5;
-        color: #495057;
+        background: var(--line);
+        color: var(--ink);
         border: none;
       }
       .btn-cancel:hover {
-        background: #e9ecef;
+        background: var(--line);
       }
       .btn-confirm {
         background: #e53935;
@@ -252,7 +252,7 @@
         padding: 9px 12px;
         font-size: 14px;
         outline: none;
-        background: #fff;
+        background: var(--paper);
         flex: 1;
         min-width: 0;
         height: 40px;
@@ -298,7 +298,7 @@
         padding: 12px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: #ffffff;
+        background: var(--paper);
       }
       .list-item-content {
         flex: 1;
@@ -313,7 +313,7 @@
         color: var(--muted);
       }
       .btn-delete {
-        background: #f8ecec;
+        background: rgba(211, 47, 47, 0.1);
         color: #d32f2f;
         border: none;
         border-radius: 6px;
@@ -343,7 +343,7 @@
         font-weight: 700;
         cursor: pointer;
         border: 1px solid var(--line);
-        background: #f6f2eb;
+        background: var(--bg);
         color: var(--muted);
         transition: all 0.2s;
         user-select: none;
@@ -368,14 +368,14 @@
         border-radius: 4px;
       }
       .dropdown-btn:hover {
-        background: #f6f2eb;
+        background: var(--bg);
       }
       .dropdown-menu {
         display: none;
         position: absolute;
         right: 0;
         top: 100%;
-        background: white;
+        background: var(--paper);
         border: 1px solid var(--line);
         box-shadow: 0 8px 24px rgba(0,0,0,0.12);
         border-radius: 8px;
@@ -400,7 +400,7 @@
         transition: background 0.2s;
       }
       .dropdown-item:hover {
-        background: #f6f2eb;
+        background: var(--bg);
       }
       .dropdown-item i {
         margin-right: 8px;
@@ -413,7 +413,7 @@
         flex-direction: column;
         gap: 8px;
         width: 100%;
-        background: #faf8f5;
+        background: var(--bg);
         border: 1.5px solid var(--brand);
         border-radius: 12px;
         padding: 14px;
@@ -436,7 +436,7 @@
         padding: 6px 10px;
         font-size: 14px;
         outline: none;
-        background: #fff;
+        background: var(--paper);
         flex: 1;
         min-width: 90px;
         height: 36px;
@@ -466,8 +466,8 @@
         background: var(--brand-dark);
       }
       .btn-inline-cancel {
-        background: #f1f3f5;
-        color: #495057;
+        background: var(--line);
+        color: var(--ink);
         border: none;
         border-radius: 6px;
         padding: 6px 14px;
@@ -477,7 +477,7 @@
         transition: background 0.2s;
       }
       .btn-inline-cancel:hover {
-        background: #e9ecef;
+        background: var(--line);
       }
       
       #toast, .toast {
@@ -559,7 +559,7 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 24px;
-        background: white;
+        background: var(--paper);
         border-radius: 8px;
         overflow: hidden;
         color: var(--ink);
@@ -570,7 +570,7 @@
         border-bottom: 1px solid var(--line);
       }
       .summary-table th {
-        background: #f6f2eb;
+        background: var(--bg);
         font-weight: 800;
       }
       .summary-table td:first-child, .summary-table th:first-child {
@@ -584,7 +584,20 @@
         font-size: 14px;
       }
     </style>
-  </head>
+  
+    <!-- Dark Mode Init -->
+    <script>
+      (function() {
+        try {
+          var localTheme = localStorage.getItem('theme');
+          var sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (localTheme === 'dark' || (!localTheme && sysTheme)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+</head>
   <body>
     <header class="lab-topbar">
       <div class="lab-topbar-inner">
@@ -592,6 +605,10 @@
           <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
           <h2>TermTem (เติมเต็ม) Lab</h2>
         </a>
+        <button class="theme-toggle" id="themeToggle" aria-label="สลับโหมดมืด/สว่าง">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
       </div>
     </header>
 
@@ -620,7 +637,7 @@
             <!-- Render people here -->
           </div>
 
-          <div id="solePayerContainer" style="margin-top: 16px; padding: 12px; background: #faf8f5; border: 1px solid var(--line); border-radius: 10px; display: none;">
+          <div id="solePayerContainer" style="margin-top: 16px; padding: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; display: none;">
             <div style="font-size: 13px; font-weight: 700; color: var(--brand-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
               <i class="fa-solid fa-credit-card" style="color: var(--brand);"></i> ใครเป็นคนออกเงินทั้งหมด? (โหมดคนเดียวรูดจ่าย)
             </div>
@@ -692,7 +709,7 @@
             </div>
             
             <div style="text-align: center; margin-top: 32px;">
-              <button onclick="shareApp()" style="background: white; color: var(--brand-dark); border: none; padding: 14px 32px; border-radius: 100px; font-weight: 800; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+              <button onclick="shareApp()" style="background: var(--paper); color: var(--brand-dark); border: none; padding: 14px 32px; border-radius: 100px; font-weight: 800; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 <i class="fa-regular fa-copy" style="font-size: 18px;"></i> คัดลอกส่งสรุปบิลให้เพื่อน
               </button>
             </div>
@@ -701,7 +718,7 @@
       </div>
       
       <div style="text-align: center; margin-top: 32px;">
-        <button onclick="clearData()" type="button" style="padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid rgba(211, 47, 47, 0.3); background: #ffffff; color: #d32f2f; transition: all 0.2s;"><i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i> ล้างข้อมูลเริ่มบิลใหม่</button>
+        <button onclick="clearData()" type="button" style="padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid rgba(211, 47, 47, 0.3); background: var(--paper); color: #d32f2f; transition: all 0.2s;"><i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i> ล้างข้อมูลเริ่มบิลใหม่</button>
       </div>
 
       <!-- SEO and User Guide Section -->
@@ -730,9 +747,9 @@
 
       <footer class="site-footer" style="margin-top: 60px;">
         <div class="footer-links">
-          <a href="index.html">หน้าแรก (Home)</a>
-          <a href="sitemap.html">ผังเว็บไซต์ (Sitemap)</a>
-          <a href="privacy.html">นโยบายความเป็นส่วนตัว (Privacy Policy)</a>
+          <a href="index.html">Home</a>
+          <a href="sitemap.html">Sitemap</a>
+          <a href="privacy.html">Privacy Policy</a>
           <a href="https://lab.termtem.in.th/" target="_blank" rel="noopener noreferrer">lab.termtem.in.th</a>
         </div>
         <div class="footer-bottom">
@@ -1373,7 +1390,7 @@
             if (t.promptpay) {
                const qrUrl = `https://promptpay.io/${t.promptpay}/${t.amount.toFixed(2)}.png`;
                qrCodeHtml = `
-                 <div style="background: white; padding: 12px; border-radius: 12px; text-align: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto;">
+                 <div style="background: var(--paper); padding: 12px; border-radius: 12px; text-align: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto;">
                    <img src="${qrUrl}" alt="PromptPay QR" style="width: 130px; height: 130px; display: block;" />
                    <div style="color: var(--ink); font-size: 13px; margin-top: 6px; font-weight: 800;">สแกนจ่าย</div>
                  </div>
@@ -1452,5 +1469,6 @@
       loadData();
       render();
     </script>
+  <script src="/theme.js"></script>
   </body>
 </html>
