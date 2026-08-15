@@ -274,7 +274,23 @@ input {
   flex-shrink: 0;
 }
 
-[data-theme='dark'] .lab-topbar-inner img {
+.lab-topbar-inner .logo-dark {
+  display: none;
+}
+
+.lab-topbar-inner .logo-light {
+  display: block;
+}
+
+[data-theme='dark'] .lab-topbar-inner .logo-light {
+  display: none;
+}
+
+[data-theme='dark'] .lab-topbar-inner .logo-dark {
+  display: block;
+}
+
+[data-theme='dark'] .lab-topbar-inner img:not(.logo-dark):not(.logo-light) {
   content: url('termtem-logo-white.png');
 }
 
