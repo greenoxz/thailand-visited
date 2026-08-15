@@ -32,8 +32,15 @@
           <img src="termtem-logo.png" alt="TermTem (เติมเต็ม) Logo">
           <h2>TermTem (เติมเต็ม) Lab</h2>
         </a>
-        <button class="theme-toggle" id="themeToggle" aria-label="สลับโหมดมืด/สว่าง">
-          <i class="fa-solid fa-moon"></i>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="สลับโหมดมืด/สว่าง" role="switch">
+          <span class="theme-toggle-track">
+            <span class="theme-toggle-icon sun" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+            <span class="theme-toggle-icon moon" aria-hidden="true"><i class="fa-solid fa-moon"></i></span>
+          </span>
+          <span class="theme-toggle-thumb" aria-hidden="true">
+            <span class="thumb-sun"><i class="fa-solid fa-sun"></i></span>
+            <span class="thumb-moon"><i class="fa-solid fa-moon"></i></span>
+          </span>
         </button>
 
       </div>
