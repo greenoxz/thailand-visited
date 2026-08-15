@@ -103,7 +103,7 @@ function initCookieBanner() {
   banner.className = 'cookie-banner';
   banner.innerHTML = `
     <div class="cookie-banner-content">
-      <p>เว็บไซต์นี้ใช้คุกกี้เพื่อมอบประสบการณ์การใช้งานที่ดีที่สุดและเพื่อการแสดงโฆษณาที่เกี่ยวข้อง การใช้งานเว็บไซต์ต่อถือว่าคุณยอมรับ <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a> ของเรา</p>
+      <p>เว็บไซต์นี้ใช้คุกกี้เพื่อมอบประสบการณ์การใช้งานที่ดีที่สุดและเพื่อการแสดงโฆษณาที่เกี่ยวข้อง การใช้งานเว็บไซต์ต่อถือว่าคุณยอมรับ <a href="/privacy">นโยบายความเป็นส่วนตัว</a> ของเรา</p>
       <button id="acceptCookies" class="cookie-btn" type="button">เข้าใจแล้ว</button>
     </div>
   `;

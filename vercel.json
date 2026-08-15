@@ -1,27 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "builds": [
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.js", "use": "@vercel/static" },
-    { "src": "*.css", "use": "@vercel/static" },
-    { "src": "*.png", "use": "@vercel/static" },
-    { "src": "*.txt", "use": "@vercel/static" },
-    { "src": "*.xml", "use": "@vercel/static" },
-    { "src": "site.webmanifest", "use": "@vercel/static" },
-    { "src": "data/**", "use": "@vercel/static" },
-    { "src": "assets/**", "use": "@vercel/static" }
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/index", "destination": "/", "permanent": true },
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/map", "destination": "/maps", "permanent": true },
+    { "source": "/map.html", "destination": "/maps", "permanent": true },
+    { "source": "/maps.html", "destination": "/maps", "permanent": true },
+    { "source": "/bill-split.html", "destination": "/bill-split", "permanent": true },
+    { "source": "/sitemap.html", "destination": "/sitemap", "permanent": true },
+    { "source": "/privacy.html", "destination": "/privacy", "permanent": true }
   ],
-  "routes": [
-    { "src": "/maps", "dest": "map.html" },
-    { "src": "/maps/", "dest": "map.html" },
-    { "src": "/map", "dest": "map.html" },
-    { "src": "/map/", "dest": "map.html" },
-    { "src": "/bill-split", "dest": "bill-split.html" },
-    { "src": "/bill-split/", "dest": "bill-split.html" },
-    { "src": "/sitemap", "dest": "sitemap.html" },
-    { "src": "/sitemap/", "dest": "sitemap.html" },
-    { "src": "/privacy", "dest": "privacy.html" },
-    { "src": "/privacy/", "dest": "privacy.html" },
-    { "src": "/(.*)", "dest": "$1" }
+  "rewrites": [
+    { "source": "/maps", "destination": "/map.html" }
   ]
 }

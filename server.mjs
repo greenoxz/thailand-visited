@@ -23,9 +23,36 @@ createServer((request, response) => {
     const host = request.headers.host || `localhost:${port}`;
     const url = new URL(request.url || "/", `http://${host}`);
     const pathname = decodeURIComponent(url.pathname);
+    // Clean URL Redirects
+    if (pathname === "/index" || pathname === "/index.html") {
+      response.writeHead(301, { "Location": "/" });
+      response.end();
+      return;
+    }
+    if (pathname === "/map" || pathname === "/map.html" || pathname === "/maps.html") {
+      response.writeHead(301, { "Location": "/maps" });
+      response.end();
+      return;
+    }
+    if (pathname === "/bill-split.html") {
+      response.writeHead(301, { "Location": "/bill-split" });
+      response.end();
+      return;
+    }
+    if (pathname === "/sitemap.html") {
+      response.writeHead(301, { "Location": "/sitemap" });
+      response.end();
+      return;
+    }
+    if (pathname === "/privacy.html") {
+      response.writeHead(301, { "Location": "/privacy" });
+      response.end();
+      return;
+    }
+
     let requestedPath = pathname === "/" ? "/index.html" : pathname;
     
-    if (requestedPath === "/maps" || requestedPath === "/maps/" || requestedPath === "/map" || requestedPath === "/map/") {
+    if (requestedPath === "/maps" || requestedPath === "/maps/") {
       requestedPath = "/map.html";
     } else if (requestedPath === "/bill-split" || requestedPath === "/bill-split/") {
       requestedPath = "/bill-split.html";
