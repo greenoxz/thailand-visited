@@ -125,3 +125,43 @@ if (document.readyState === 'loading') {
 } else {
   initCookieBanner();
 }
+
+function initDonationGoal() {
+  const footerTip = document.querySelector('.footer-tip');
+  if (!footerTip) return;
+
+  if (document.getElementById('donation-goal-container')) return;
+
+  const container = document.createElement('div');
+  container.id = 'donation-goal-container';
+  container.className = 'donation-goal-container';
+  container.innerHTML = `
+    <div class="donation-goal-text">เป้าหมายสนับสนุนเซิร์ฟเวอร์เดือนนี้</div>
+    <div class="donation-goal-bar-bg">
+      <div id="donation-progress" class="donation-goal-bar-fill"></div>
+      <div class="donation-goal-value"><span id="donation-amount">0</span> / 300 บาท</div>
+    </div>
+  `;
+  
+  footerTip.parentNode.insertBefore(container, footerTip.nextSibling);
+
+  fetch('/api/donations')
+  .then(res => res.json())
+  .then(json => {
+    if (json && json.data && typeof json.data.monthly === 'number') {
+      const amount = json.data.monthly;
+      const target = 300;
+      document.getElementById('donation-amount').textContent = amount.toLocaleString();
+      let percent = (amount / target) * 100;
+      if (percent > 100) percent = 100;
+      document.getElementById('donation-progress').style.width = percent + '%';
+    }
+  })
+  .catch(err => console.error('Failed to fetch donation stats:', err));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDonationGoal);
+} else {
+  initDonationGoal();
+}
