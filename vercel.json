@@ -1,16 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "routes": [
-    { "src": "/index(\\.html)?", "status": 308, "headers": { "Location": "/" } },
-    { "src": "/map(\\.html)?", "status": 308, "headers": { "Location": "/maps" } },
-    { "src": "/maps\\.html", "status": 308, "headers": { "Location": "/maps" } },
-    { "src": "/bill-split\\.html", "status": 308, "headers": { "Location": "/bill-split" } },
-    { "src": "/sitemap\\.html", "status": 308, "headers": { "Location": "/sitemap" } },
-    { "src": "/privacy\\.html", "status": 308, "headers": { "Location": "/privacy" } },
-    { "src": "/maps", "dest": "/map.html" },
-    { "src": "/bill-split", "dest": "/bill-split.html" },
-    { "src": "/sitemap", "dest": "/sitemap.html" },
-    { "src": "/privacy", "dest": "/privacy.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/map", "destination": "/maps", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/maps", "destination": "/map.html" }
   ]
 }
