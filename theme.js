@@ -145,7 +145,7 @@ function initDonationGoal() {
   
   footerTip.parentNode.insertBefore(container, footerTip.nextSibling);
 
-  fetch('/api/donations')
+  fetch('/api/donations.js')
   .then(res => res.json())
   .then(json => {
     if (json && json.data && typeof json.data.monthly === 'number') {
