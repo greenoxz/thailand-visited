@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Use environment variable or fallback to the provided key
   const apiKey = process.env.EASYDONATE_API_KEY || 'ezdn_v1_prhqed4mt6s6do83zj1w8sjirbk6yb3r';
   
