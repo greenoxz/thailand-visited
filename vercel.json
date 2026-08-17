@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "**", "use": "@vercel/static" }
+  ],
   "routes": [
     { "src": "/index(\\.html)?", "status": 308, "headers": { "Location": "/" } },
     { "src": "/map(\\.html)?", "status": 308, "headers": { "Location": "/maps" } },
